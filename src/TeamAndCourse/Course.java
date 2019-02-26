@@ -34,15 +34,7 @@ public class Course {
     private float passObstaclesOne(Teammate teammate){
         float time = 0;
         for(Obstacle obstacle : this.obstacleSequence){
-            if(obstacle instanceof Road){
-                time += teammate.run((Road)obstacle);
-            }else if(obstacle instanceof Pool){
-                time += teammate.swim((Pool)obstacle);
-            }else if(obstacle instanceof Pit){
-                time += teammate.jump((Pit)obstacle);
-            }else if (obstacle instanceof Wall){
-                time += teammate.climb((Wall)obstacle);
-            }
+            time += obstacle.passObstacle(teammate);
         }
         System.out.printf("%s passed the course in %.2f units of time.\n\n", teammate.name, time);
         return time;
