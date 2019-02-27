@@ -19,13 +19,13 @@ class Pit extends Obstacle{
     float passObstacle(Teammate teammate) {
         float time;
         System.out.printf("%s jumps over the pit.\n",teammate.name);
-        if (teammate.agility < 30 || teammate.strength < 30 || teammate.endurance < 30) {
+        if (teammate.agility < this.getDistance() * 10 || teammate.strength < this.getDistance() * 10 || teammate.endurance < this.getDistance() * 10) {
             System.out.printf("%s dropped into the pit and climbs out.\n",teammate.name);
             teammate.agility -= this.getDepth()* 4;
             if (teammate.agility < 0) teammate.agility = 0;
             teammate.strength -= this.getDepth() * 4;
             if (teammate.strength < 0) teammate.strength = 0;
-            teammate.endurance -= this.getDepth() * 6;
+            teammate.endurance -= this.getDepth() * 4;
             if (teammate.endurance < 0) teammate.endurance = 0;
             time = 30 * this.getDepth() / (1 + (teammate.agility / 300f)+ (teammate.strength / 300f) + (teammate.endurance / 300f));
             System.out.printf("It took %.2f time units.\n\n",time);

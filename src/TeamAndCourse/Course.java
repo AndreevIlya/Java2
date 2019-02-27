@@ -3,7 +3,7 @@ package TeamAndCourse;
 import java.util.Random;
 
 public class Course {
-    private static Random random = new Random();
+    private static final Random random = new Random();
     private Obstacle[] obstacleSequence;
     public Course(int obstaclesNumber){
         obstacleSequence = new Obstacle[obstaclesNumber];
@@ -43,7 +43,7 @@ public class Course {
         float timeMin = Float.POSITIVE_INFINITY, time;
         String nameWin = "";
         for(Teammate teammate : team.teammates){
-            time = passObstaclesOne(teammate);
+            time = this.passObstaclesOne(teammate);
             if(time < timeMin){
                 timeMin = time;
                 nameWin = teammate.name;

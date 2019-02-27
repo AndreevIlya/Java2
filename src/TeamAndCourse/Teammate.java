@@ -3,8 +3,8 @@ package TeamAndCourse;
 import java.util.Random;
 
 class Teammate{
-    private static Random random = new Random();
-    private static String[] teammateNames = {"Sam", "Joe", "Robert", "Cuthbert", "Andy","John","Patrick","Antony"};
+    private static final Random random = new Random();
+    private static final String[] teammateNames = {"Sam", "Joe", "Robert", "Cuthbert", "Andy","John","Patrick","Antony"};
     int strength;
     int agility;
     int endurance;

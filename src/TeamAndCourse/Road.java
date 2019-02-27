@@ -14,13 +14,23 @@ class Road extends Obstacle {
 
     @Override
     float passObstacle(Teammate teammate) {
+        float time;
         System.out.printf("%s runs on the road.\n",teammate.name);
-        teammate.agility -= this.getDistance() / 20;
-        if(teammate.agility < 0) teammate.agility = 0;
-        teammate.endurance -= this.getDistance() / 10;
-        if (teammate.endurance < 0) teammate.endurance = 0;
-        float time = this.getDistance() / (1 + (teammate.agility / 200f) + (teammate.endurance / 200f));
-        System.out.printf("It took %.2f time units.\n\n",time);
+        if(teammate.agility < 10){
+            System.out.printf("%s\'s gone limp and can not run, so he walks.\n",teammate.name);
+            teammate.agility = 0;
+            teammate.endurance += this.getDistance() / 10;
+            teammate.strength += this.getDistance() / 25;
+            time = this.getDistance();
+            System.out.printf("It took %.2f time units.\n\n", time);
+        }else {
+            teammate.agility -= this.getDistance() / 20;
+            if (teammate.agility < 0) teammate.agility = 0;
+            teammate.endurance -= this.getDistance() / 10;
+            if (teammate.endurance < 0) teammate.endurance = 0;
+            time = this.getDistance() / (1 + (teammate.agility / 200f) + (teammate.endurance / 200f));
+            System.out.printf("It took %.2f time units.\n\n", time);
+        }
         return time;
     }
 }
