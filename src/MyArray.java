@@ -42,11 +42,19 @@ class MyArray {
     void arrayToInt() throws MyArrayDataException{
         for(int i = 0; i < arraySizeLimit; i++){
             for(int j = 0; j < arraySizeLimit; j++){
-                try{
+                if(!arrayString[i][j].equals("")) {
+                    for (int k = 0; k < arrayString[i][j].length(); k++) {
+                        char c = arrayString[i][j].charAt(k);
+                        if (!(c == '1' || c == '2' || c == '3' || c == '4' || c == '5' ||
+                                c == '6' || c == '7' || c == '8' || c == '9' || c == '0')) {
+                            throw new MyArrayDataException("In the cell at " + (i + 1) +
+                                    " " + (j + 1) + " there\'s no number present");
+                        }
+                    }
                     arrayInt[i][j] = parseInt(arrayString[i][j]);
-                }catch(NumberFormatException exc){
-                    throw new MyArrayDataException("In the cell at " + (i + 1) +
-                            " " + (j + 1) + " there\'s no number present");
+                }else{
+                    throw new MyArrayDataException("The cell at " + (i + 1) +
+                            " " + (j + 1) + " is empty");
                 }
             }
         }

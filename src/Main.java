@@ -2,7 +2,7 @@ public class Main {
 
     public static void main(String[] args) {
         String[][] array = {{"1","2","3","4"},
-                {"1","2","3","4"},
+                {"1","","3","4"},
                 {"1","2","3","4"},
                 {"1","2","3","4"}};
         try{
