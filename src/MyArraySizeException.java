@@ -1,2 +1,2 @@
-public class MyArraySizeException extends RuntimeException {
+class MyArraySizeException extends RuntimeException {
 }

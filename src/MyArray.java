@@ -1,5 +1,3 @@
-import static java.lang.Integer.parseInt;
-
 class MyArray {
     private static int arraySizeLimit = 4;
     private String[][] arrayString = new String[arraySizeLimit][arraySizeLimit];
@@ -27,7 +25,7 @@ class MyArray {
         System.out.println("}");
     }
 
-    void showLine(int i){
+    private void showLine(int i){
         System.out.print("{");
         for(int j = 0; j < arraySizeLimit; j++){
             if(j != arraySizeLimit - 1) {
@@ -48,7 +46,7 @@ class MyArray {
             for(int j = 0; j < arraySizeLimit; j++){
                 if(!arrayString[i][j].equals("")) {
                     try{
-                        arrayInt[i][j] = parseInt(arrayString[i][j]);
+                        arrayInt[i][j] = Integer.parseInt(arrayString[i][j]);
                     }catch(NumberFormatException exc){
                         throw new MyArrayDataException("In the cell at " + (i + 1) +
                                 " " + (j + 1) + " there\'s no number present");
