@@ -7,12 +7,20 @@ public class Main {
         colours.showOccurrences();
         System.out.println();
 
-        TelephoneDirectory phones = new TelephoneDirectory();
-        phones.addEntries(20);
+        TelephoneDirectory2 phones = new TelephoneDirectory2();//remove 2 to use first class
+        phones.addEntries();
 
         phones.getPhones("Coulthard");
-
         phones.getPhonesOfAll();
+        System.out.println();
+
+        ListToRevert list = new ListToRevert(10);
+        System.out.println("Before:");
+        list.showList();
+        System.out.println("After:");
+        list.revertList();
+        list.showList();
+
 
     }
 

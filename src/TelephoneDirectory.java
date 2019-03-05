@@ -1,6 +1,7 @@
 import java.util.*;
 
 class TelephoneDirectory {
+    private final int entriesQuantity = 30;
     private final Random random = new Random();
     private final String[] surnames = {"Smith","Jones","Clark","Davidson","Hamilton",
             "Speed","Stroll","Coulthard","Stewart","Tyrrell"};
@@ -73,8 +74,8 @@ class TelephoneDirectory {
         return phones.getPhonesOfOne();
     }
 
-    void addEntries(int quantity){
-        for(int i = 0; i < quantity; i++){
+    void addEntries(){
+        for(int i = 0; i < entriesQuantity; i++){
             addEntry();
         }
     }
