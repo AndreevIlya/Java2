@@ -17,7 +17,10 @@ class TelephoneDirectory2{
         if(checkSurname(surname)){
             System.out.println(surname + "\'s phone numbers are:");
             for(int i =0;i < entriesQuantity;i++){
-                System.out.println(i + " " + getPhone(surname, i));
+                String phone = getPhone(surname, i);
+                if(phone != null){
+                    System.out.println(getPhone(surname, i));
+                }
             }
             System.out.println();
         }else{

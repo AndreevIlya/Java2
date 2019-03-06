@@ -21,7 +21,6 @@ public class DoubleKeys<K1,K2> {
 
     @Override
     public boolean equals(Object obj) {
-        //System.out.println(super.equals(obj));
         return super.equals(obj);
     }
 }
