@@ -1,7 +1,7 @@
 import java.util.Random;
 
 class TelephoneDirectory2{
-    private final int entriesQuantity = 30;
+    private final int entriesQuantity = 15;
     private final Random random = new Random();
     private final String[] surnames = {"Smith","Jones","Clark","Davidson","Hamilton",
             "Speed","Stroll","Coulthard","Stewart","Tyrrell"};
@@ -26,7 +26,13 @@ class TelephoneDirectory2{
     }
 
     private boolean checkSurname(String surname){
-        return phoneDirectory.containsKey(surname);
+        for(int i =0;i < entriesQuantity;i++){
+            DoubleKeys<String,Integer> doubleKey = new DoubleKeys<>(surname,i);
+            if(phoneDirectory.containsKey(doubleKey)){
+                return true;
+            }
+        }
+        return false;
     }
 
     private String getPhone(String surname, int i){
