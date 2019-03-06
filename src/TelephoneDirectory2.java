@@ -17,7 +17,7 @@ class TelephoneDirectory2{
         if(checkSurname(surname)){
             System.out.println(surname + "\'s phone numbers are:");
             for(int i =0;i < entriesQuantity;i++){
-                System.out.println(getPhone(surname, i));
+                System.out.println(i + " " + getPhone(surname, i));
             }
             System.out.println();
         }else{
@@ -27,8 +27,7 @@ class TelephoneDirectory2{
 
     private boolean checkSurname(String surname){
         for(int i =0;i < entriesQuantity;i++){
-            DoubleKeys<String,Integer> doubleKey = new DoubleKeys<>(surname,i);
-            if(phoneDirectory.containsKey(doubleKey)){
+            if(phoneDirectory.containsKey(surname, i)){
                 return true;
             }
         }
