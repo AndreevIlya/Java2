@@ -1,19 +1,22 @@
+package Tasks;
+
+import Multi.MultiHashMap;
 import java.util.Random;
 
-class TelephoneDirectory2{
+public class TelephoneDirectory2{
     private final int entriesQuantity = 15;
     private final Random random = new Random();
     private final String[] surnames = {"Smith","Jones","Clark","Davidson","Hamilton",
             "Speed","Stroll","Coulthard","Stewart","Tyrrell"};
     private MultiHashMap<String,Integer,String> phoneDirectory = new MultiHashMap<>();
 
-    void getPhonesOfAll(){
+    public void getPhonesOfAll(){
         for(String surname : surnames){
             getPhones(surname);
         }
     }
 
-    void getPhones(String surname){
+    public void getPhones(String surname){
         if(checkSurname(surname)){
             System.out.println(surname + "\'s phone numbers are:");
             for(int i =0;i < entriesQuantity;i++){
@@ -41,7 +44,7 @@ class TelephoneDirectory2{
         return phoneDirectory.get(surname,i);
     }
 
-    void addEntries(){
+    public void addEntries(){
         for(int i =0;i < entriesQuantity;i++){
             addEntry(i);
         }

@@ -1,3 +1,5 @@
+package Multi;
+
 import java.util.HashMap;
 
 public class MultiHashMap<K1,K2,V> extends HashMap<DoubleKeys<K1,K2>,V>

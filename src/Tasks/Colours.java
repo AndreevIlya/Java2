@@ -1,12 +1,28 @@
+package Tasks;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 
-class Colours {
+public class Colours {
     private ArrayList<String> coloursArrayList = new ArrayList<>();
     private HashSet<String> coloursSet;
+    private HashMap<String,Integer> coloursMap = new HashMap<>();
 
-    void showOccurrences(){
+    public void showOccurrences(){
+        getOccurrences();
+        int counter;
+        for(String colour : coloursSet){
+            counter = coloursMap.get(colour);
+            if (counter == 1){
+                System.out.println("Colour " + colour + " occurs once.");
+            }else {
+                System.out.println("Colour " + colour + " occurs " + counter + " times.");
+            }
+        }
+    }
+    private void getOccurrences(){
         int counter;
         for(String colour : coloursSet){
             counter = 0;
@@ -15,23 +31,19 @@ class Colours {
                     counter++;
                 }
             }
-            if (counter == 1){
-                System.out.println("Colour " + colour + " occurs once.");
-            }else {
-                System.out.println("Colour " + colour + " occurs " + counter + " times.");
-            }
+            coloursMap.put(colour,counter);
         }
     }
 
-    void findUnique(){
+    public void findUnique(){
         coloursSet = new HashSet<>(coloursArrayList);
     }
 
-    int countUnique(){
+    public int countUnique(){
         return coloursSet.size();
     }
 
-    Colours(){
+    public Colours(){
         Random random = new Random();
         for(int i = 0; i < 20; i++){
             int randomNumber = random.nextInt(8);
