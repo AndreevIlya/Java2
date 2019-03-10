@@ -15,7 +15,6 @@ class RunAwayButton extends JFrame {
         panel.setLayout(null);
         add(panel);
         panel.add(button);
-
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -27,34 +26,34 @@ class RunAwayButton extends JFrame {
                 int buttonYB = buttonYT + 70;
                 if(counter > 10){
                     counter = 0;
-                    button.setBounds(random.nextInt(835), random.nextInt(695), 150, 70);
+                    button.setLocation(random.nextInt(835), random.nextInt(695));
                 }else{
                     if (mouseX < 10) {
-                        if (buttonXR < 850) {
-                            button.setBounds(buttonXL + 150, buttonYT, 150, 70);
+                        if (buttonXR < 835) {
+                            button.setLocation(buttonXL + 150, buttonYT);
                         } else {
-                            button.setBounds(0, buttonYT, 150, 70);
+                            button.setLocation(0, buttonYT);
                         }
                     } else if (mouseX > 140) {
                         if (buttonXL > 150) {
-                            button.setBounds(buttonXL - 150, buttonYT, 150, 70);
+                            button.setLocation(buttonXL - 150, buttonYT);
                         } else {
-                            button.setBounds(835, buttonYT, 150, 70);
+                            button.setLocation(835, buttonYT);
                         }
                     } else if (mouseY < 10) {
-                        if (buttonYB < 730) {
-                            button.setBounds(buttonXL, buttonYT + 70, 150, 70);
+                        if (buttonYB < 695) {
+                            button.setLocation(buttonXL, buttonYT + 70);
                         } else {
-                            button.setBounds(buttonXL, 0, 150, 70);
+                            button.setLocation(buttonXL, 0);
                         }
                     } else if (mouseY > 60) {
                         if (buttonYT > 70) {
-                            button.setBounds(buttonXL, buttonYT - 70, 150, 70);
+                            button.setLocation(buttonXL, buttonYT - 70);
                         } else {
-                            button.setBounds(buttonXL, 695, 150, 70);
+                            button.setLocation(buttonXL, 695);
                         }
                     } else {
-                        button.setBounds(random.nextInt(835), random.nextInt(695), 150, 70);
+                        button.setLocation(random.nextInt(835), random.nextInt(695));
                     }
                     counter++;
                 }
