@@ -3,10 +3,10 @@ import java.awt.*;
 import java.awt.event.*;
 
 class Application extends JFrame {
-    private JButton buttonEnter = configButton();
-    private JTextField textField = configTextField();
-    private JTextArea textArea = configTextArea();
-    private JPanel pane = configPane();
+    private JButton buttonEnter = createSendButton();
+    private JTextField textField = createTextField();
+    private JTextArea textArea = createTextArea();
+    private JPanel pane = createPane();
 
 
     Application(){
@@ -35,7 +35,7 @@ class Application extends JFrame {
         pane.add(new JScrollPane(textArea),BorderLayout.CENTER);
     }
 
-    private JPanel configPane(){
+    private JPanel createPane(){
         JPanel pane = new JPanel();
         pane.setBackground(new Color(0xcccccc));
         pane.setLayout(new BorderLayout());
@@ -43,7 +43,7 @@ class Application extends JFrame {
         return pane;
     }
 
-    private JButton configButton(){
+    private JButton createSendButton(){
         JButton buttonEnter = new JButton("Enter");
         buttonEnter.setHorizontalAlignment(SwingConstants.CENTER);
         buttonEnter.setVerticalAlignment(SwingConstants.CENTER);
@@ -56,7 +56,7 @@ class Application extends JFrame {
         return buttonEnter;
     }
 
-    private JTextField configTextField(){
+    private JTextField createTextField(){
         JTextField textField = new JTextField();
         textField.setHorizontalAlignment(SwingConstants.LEFT);
         textField.setMargin(new Insets(20,50,20,50));
@@ -68,7 +68,7 @@ class Application extends JFrame {
         return textField;
     }
 
-    private JTextArea configTextArea(){
+    private JTextArea createTextArea(){
         JTextArea textArea = new JTextArea();
         textArea.setMargin(new Insets(20,50,20,50));
         textArea.setFont(new Font("Verdana",Font.PLAIN,18));
@@ -88,14 +88,7 @@ class Application extends JFrame {
     }
 
     private void pressEnter(){
-        textField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_ENTER){
-                    putText();
-                }
-            }
-        });
+        textField.addActionListener(e -> putText());
     }
 
     private void addListeners(){
