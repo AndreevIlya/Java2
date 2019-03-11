@@ -72,6 +72,7 @@ class Application extends JFrame {
         JTextArea textArea = new JTextArea();
         textArea.setMargin(new Insets(20,50,20,50));
         textArea.setFont(new Font("Verdana",Font.PLAIN,18));
+        textArea.setFocusable(false);
 
         return textArea;
     }
@@ -84,7 +85,11 @@ class Application extends JFrame {
         }
     }
     private void clickButton(){
-        buttonEnter.addActionListener(e -> putText());
+        buttonEnter.addActionListener(e -> {
+                putText();
+                textField.requestFocus();
+            }
+        );
     }
 
     private void pressEnter(){
