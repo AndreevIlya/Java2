@@ -49,11 +49,9 @@ public class MyArray {
 
     private void divideThread(int threadsNumber){
         ArrayComputer[] arrayComps = new ArrayComputer[threadsNumber];
-        for(int i = 0;i < threadsNumber; i++){
-            arrayComps[i] = new ArrayComputer(i + 1,i * SIZE / threadsNumber,SIZE / threadsNumber);
-        }
         Thread[] threads = new Thread[threadsNumber];
         for(int i = 0;i < threadsNumber; i++){
+            arrayComps[i] = new ArrayComputer(i + 1,i * SIZE / threadsNumber,SIZE / threadsNumber);
             threads[i] = new Thread(arrayComps[i]);
             threads[i].start();
         }
