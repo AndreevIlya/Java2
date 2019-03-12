@@ -20,29 +20,11 @@ public class MyArray {
         return arr;
     }
 
-    private float[] calcHalf(){
+    private float[] calc(int division){
         long initCounter = System.currentTimeMillis();
-        System.out.println("Started by half.");
+        System.out.println("Started by " + division + ".");
         fillArray();
-        divideThread(2);
-        System.out.println(((System.currentTimeMillis() - initCounter) / 1000.0d) + " seconds.");
-        return arr;
-    }
-
-    private float[] calcQuarter(){
-        long initCounter = System.currentTimeMillis();
-        System.out.println("Started by quarter.");
-        fillArray();
-        divideThread(4);
-        System.out.println(((System.currentTimeMillis() - initCounter) / 1000.0d) + " seconds.");
-        return arr;
-    }
-
-    private float[] calcEighth(){
-        long initCounter = System.currentTimeMillis();
-        System.out.println("Started by 8.");
-        fillArray();
-        divideThread(8);
+        divideThread(division);
         System.out.println(((System.currentTimeMillis() - initCounter) / 1000.0d) + " seconds.");
         return arr;
     }
@@ -55,6 +37,7 @@ public class MyArray {
             threads[i] = new Thread(arrayComps[i]);
             threads[i].start();
         }
+        threads[0].interrupt();
         try {
             for(int i = 0;i < threadsNumber; i++){
                 threads[i].join();
@@ -102,9 +85,9 @@ public class MyArray {
         MyArray array3 = new MyArray();
         MyArray array4 = new MyArray();
         float[] arr1 = array1.calcFull();
-        float[] arr2 = array2.calcHalf();
-        float[] arr3 = array3.calcQuarter();
-        float[] arr4 = array4.calcEighth();
+        float[] arr2 = array2.calc(2);
+        float[] arr3 = array3.calc(4);
+        float[] arr4 = array4.calc(8);
         for (int i = 0; i < SIZE;i++) {//To check if result is the same.
             if(arr1[i] != arr2[i]) System.out.println(i);
             if(arr1[i] != arr3[i]) System.out.println(i);
