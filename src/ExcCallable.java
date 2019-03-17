@@ -19,13 +19,14 @@ public class ExcCallable implements Callable {
         ExecutorService executor = Executors.newFixedThreadPool(10);
         List<Future<String>> list = new ArrayList<>();
         Callable callable = new ExcCallable();
-        try {
-            for (int i = 0; i < 100; i++) {
-                Future<String> future = executor.submit(callable);
-                list.add(future);
+        for (int i = 0; i < 100; i++) {
+            Future<String> future = null;
+            try {
+                future = executor.submit(callable);
+            }catch (Exception e){
+                System.out.println("Exception.");
             }
-        }catch (Exception e){
-            System.out.println("Exception.");
+            list.add(future);
         }
         for(Future<String> future : list){
             try {

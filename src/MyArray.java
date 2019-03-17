@@ -37,7 +37,6 @@ public class MyArray {
             threads[i] = new Thread(arrayComps[i]);
             threads[i].start();
         }
-        threads[0].interrupt();
         try {
             for(int i = 0;i < threadsNumber; i++){
                 threads[i].join();
