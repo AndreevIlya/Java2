@@ -21,7 +21,7 @@ class ChatClient extends JFrame {
     private DataInputStream inputStream;
 
 
-    private ChatClient(){
+    ChatClient(){
         initConnection();
         initGUI();
         initReceiver();
@@ -203,9 +203,5 @@ class ChatClient extends JFrame {
         });
         pressEnter();
         clickButton();
-    }
-
-    public static void main(String[] args) {
-        new ChatClient();
     }
 }

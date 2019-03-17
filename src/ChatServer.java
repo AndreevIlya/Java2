@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class ChatServer {
     private static Scanner scanner = new Scanner(System.in);
 
-    public static void main(String[] args) {
+    public static void runServer() {
         try(ServerSocket serverSocket = new ServerSocket(8080)) {
             System.out.println("server started");
             Socket socket = serverSocket.accept();
