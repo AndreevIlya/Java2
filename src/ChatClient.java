@@ -39,7 +39,7 @@ class ChatClient extends JFrame {
             socket = new Socket("localhost", 8080);
             outputStream = new DataOutputStream(socket.getOutputStream());
             inputStream = new DataInputStream(socket.getInputStream());
-            System.out.println("connection initialized");
+            System.out.println("Connection initialized");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -52,7 +52,8 @@ class ChatClient extends JFrame {
                     String messageFromServer = inputStream.readUTF();
                     if(!messageFromServer.equals("")){
                         textArea.append("Server: ");
-                        putText(messageFromServer);
+                        Message readyMessage = new Message(messageFromServer);
+                        readyMessage.writeMessage();
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -134,43 +135,62 @@ class ChatClient extends JFrame {
         return textArea;
     }
 
-    private void putText(String text){
-        String time = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy").format(Calendar.getInstance().getTime());
-        textField.setText("");
-        int rows = writeTextToTextArea(text);
-        timeArea.append(time);
-        for(int i = 0; i < rows; i++){
-            timeArea.append("\n");
-        }
-    }
+    private class Message{
+        private String message;
+        private final int width = 45;
+        private int rowsCount = 1;
 
-    private int writeTextToTextArea(String line){
-        int rows = 1;
-        int lineLength = line.length();
-        int wordsLength = 0;
-        if(lineLength >= 45){
-            String[] words = line.split(" ");
-            for(String word : words){
-                wordsLength += word.length() + 1;
-                if(wordsLength > 45){
-                    textArea.append("\n" + word + " ");
-                    wordsLength = word.length() + 1;
-                    rows++;
-                }else{
-                    textArea.append(word + " ");
-                }
-            }
-            textArea.append("\n");
-        }else{
-            textArea.append(line + "\n");
+        Message(String message){
+            this.message = message;
         }
-        return rows;
+
+        private String splitMessage(){
+            StringBuilder splitMessage = new StringBuilder();
+            int lineLength = message.length();
+            int wordsLength = 0;
+            if(lineLength >= width){
+                String[] words = message.split(" ");
+                for(String word : words){
+                    wordsLength += word.length() + 1;
+                    if(wordsLength > width){
+                        splitMessage.append("\n").append(word).append(" ");
+                        wordsLength = word.length() + 1;
+                        rowsCount++;
+                    }else{
+                        splitMessage.append(word).append(" ");
+                    }
+                }
+                splitMessage.append("\n");
+                return splitMessage.toString();
+            }else{
+                return message + "\n";
+            }
+        }
+
+        private int getRowsCount(){
+            return rowsCount;
+        }
+
+        private String getTime(){
+            StringBuilder time = new StringBuilder(new SimpleDateFormat("HH:mm:ss dd.MM.yyyy").format(Calendar.getInstance().getTime()));
+            for(int i = 0; i < getRowsCount(); i++){
+                time.append("\n");
+            }
+            return time.toString();
+        }
+
+        private void writeMessage(){
+            textArea.append(splitMessage());
+            timeArea.append(getTime());
+        }
     }
 
     private void processMessage(String message) {
         if(!message.equals("")) {
+            textField.setText("");
             textArea.append("You: ");
-            putText(message);
+            Message readyMessage = new Message(message);
+            readyMessage.writeMessage();
             sendMessage(message);
         }
     }
@@ -183,7 +203,7 @@ class ChatClient extends JFrame {
         }
     }
 
-    private void clickButton(){
+    private void handleClickButton(){
         buttonEnter.addActionListener(e -> {
                 processMessage(textField.getText());
                 textField.requestFocus();
@@ -191,7 +211,7 @@ class ChatClient extends JFrame {
         );
     }
 
-    private void pressEnter(){
+    private void handlePressEnter(){
         textField.addActionListener(e -> processMessage(textField.getText()));
     }
 
@@ -201,7 +221,7 @@ class ChatClient extends JFrame {
                 textField.requestFocusInWindow();
             }
         });
-        pressEnter();
-        clickButton();
+        handlePressEnter();
+        handleClickButton();
     }
 }

@@ -5,14 +5,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class ChatServer {
+class ChatServer {
     private static Scanner scanner = new Scanner(System.in);
 
-    public static void runServer() {
+    static void runServer() {
         try(ServerSocket serverSocket = new ServerSocket(8080)) {
-            System.out.println("server started");
+            System.out.println("Server started");
             Socket socket = serverSocket.accept();
-            System.out.println("client connected " + socket);
+            System.out.println("Client connected " + socket);
 
             Thread threadIn = new Thread(() -> {
                 try (DataInputStream inputStream = new DataInputStream(socket.getInputStream())) {
@@ -24,6 +24,7 @@ public class ChatServer {
                         e.printStackTrace();
                 }
             });
+            threadIn.setDaemon(true);
             threadIn.start();
             Thread threadOut = new Thread(() -> {
                 try (DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream())) {
@@ -35,7 +36,9 @@ public class ChatServer {
                         e.printStackTrace();
                 }
             });
+            threadOut.setDaemon(true);
             threadOut.start();
+            System.out.println("In and out threads started.");
         } catch (IOException e) {
             e.printStackTrace();
         }
