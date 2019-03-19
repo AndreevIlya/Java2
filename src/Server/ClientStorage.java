@@ -12,12 +12,21 @@ class ClientStorage {
         clients.add(client);
     }
 
-    public void removeClient(Client client) {
-        System.out.println("client removed: "+client);
+    void removeClient(Client client) {
+        System.out.println("client removed: " + client);
         clients.remove(client);
     }
 
-    public List<Client> getClients() {
+    Client findClient(String login){
+        for (Client client : clients){
+            if (client.getLogin().equals(login)){
+                return client;
+            }
+        }
+        return null;
+    }
+
+    List<Client> getClients() {
         return clients;
     }
 

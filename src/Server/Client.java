@@ -17,19 +17,19 @@ class Client {
         this.os = os;
     }
 
-    public String getLogin() {
+    String getLogin() {
         return login;
     }
 
-    public int getPasswordHash() {
+    int getPasswordHash() {
         return passwordHash;
     }
 
-    public DataInputStream getIs() {
+    DataInputStream getIs() {
         return is;
     }
 
-    public DataOutputStream getOs() {
+    DataOutputStream getOs() {
         return os;
     }
 

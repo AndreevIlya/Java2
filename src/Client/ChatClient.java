@@ -13,13 +13,16 @@ import java.util.Calendar;
 class ChatClient extends JFrame {
     private JButton enterButton = createSendButton("Enter");
     private JButton loginButton = createSendButton("Log in");
+    private JButton logoutButton = createSendButton("Log out");
     private JTextField textField = createTextField();
     private JTextField loginField = createTextField();
     private JTextField passField = createTextField();
     private JTextArea textArea = createTextArea();
     private JTextArea timeArea = createTextArea();
-    private JLabel loggingLabel = createLabel();
+    private JLabel loggingFailureLabel = createLabel();
+    private JLabel loggingSuccessLabel = createLabel();
     private JPanel loginPane = createColumnPane(3);
+    private JPanel loggedPane = createPane();
 
 
     private Socket socket;
@@ -32,7 +35,6 @@ class ChatClient extends JFrame {
 
     private ChatClient(){
         initGUI();
-
         initConnection();
         initReceiver();
     }
@@ -56,50 +58,11 @@ class ChatClient extends JFrame {
     }
 
     private void initReceiver() {
-        /*Thread loginThread = new Thread(() -> {
-            while (true) {
-                System.out.println(1);
-                try {
-                    String messageFromServer = inputStream.readUTF();
-                    System.out.println(4 + messageFromServer);
-                    if(!messageFromServer.equals("Failed.")){
-                        loggingLabel.setText("Login is already occupied or password is wrong.");
-                        loggingLabel.setVisible(true);
-                    }else if(messageFromServer.equals(loginField.getText())){
-                        loggingLabel.setText("You are logged in as " + messageFromServer + ".");
-                        loggingLabel.setVisible(true);
-                        enterButton.setVisible(true);
-                        textField.setVisible(true);
-                        loginPane.setVisible(false);
-                        break;
-                    }else{
-                        System.out.println("2" + messageFromServer);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        loginThread.setDaemon(true);
-        loginThread.start();*/
-        Thread thread = new Thread(() -> {
+        Thread messageThread = new Thread(() -> {
+            System.out.println("Message thread started");
             while (true) {
                 try {
                     String messageFromServer = inputStream.readUTF();
-                    System.out.println(5 + messageFromServer);
-                    if(!messageFromServer.equals("Failed.")){
-                        loggingLabel.setText("Login is already occupied or password is wrong.");
-                        loggingLabel.setVisible(true);
-                    }else if(messageFromServer.equals(loginField.getText())){
-                        loggingLabel.setText("You are logged in as " + messageFromServer + ".");
-                        loggingLabel.setVisible(true);
-                        enterButton.setVisible(true);
-                        textField.setVisible(true);
-                        loginPane.setVisible(false);
-                        break;
-                    }else{
-                        System.out.println("2" + messageFromServer);
-                    }
                     if(!messageFromServer.equals("")){
                         textArea.append("Server: ");
                         Message readyMessage = new Message(messageFromServer);
@@ -110,8 +73,33 @@ class ChatClient extends JFrame {
                 }
             }
         });
-        thread.setDaemon(true);
-        thread.start();
+        Thread loginThread = new Thread(() -> {
+            while (true) {
+                System.out.println("Login thread started.");
+                try {
+                    String messageFromServer = inputStream.readUTF();
+                    if(messageFromServer.equals("Failed.")){
+                        loggingFailureLabel.setText("Login is already occupied or password is wrong.");
+                        loggingFailureLabel.setVisible(true);
+                    }else if(messageFromServer.equals(loginField.getText())){
+                        loginPane.setVisible(false);
+                        loggingFailureLabel.setVisible(false);
+                        loggingSuccessLabel.setText("You are logged in as " + messageFromServer + ".");
+                        add(loggedPane,BorderLayout.NORTH);
+                        enterButton.setVisible(true);
+                        textField.setVisible(true);
+
+                        messageThread.setDaemon(true);
+                        messageThread.start();
+                        break;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            System.out.println("Login thread stopped.");
+        });
+        loginThread.start();
         System.out.println("receiver started");
     }
 
@@ -129,12 +117,15 @@ class ChatClient extends JFrame {
     private void setElements(){
         JPanel pane = createPane();
         JPanel innerPane = createColumnPane(2);
-        pane.add(loggingLabel,BorderLayout.NORTH);
-        loggingLabel.setVisible(false);
+
+        loggedPane.add(logoutButton,BorderLayout.EAST);
+        loggedPane.add(loggingSuccessLabel,BorderLayout.CENTER);
         add(loginPane,BorderLayout.NORTH);
         add(enterButton,BorderLayout.SOUTH);
         enterButton.setVisible(false);
         add(pane,BorderLayout.CENTER);
+        pane.add(loggingFailureLabel,BorderLayout.NORTH);
+        loggingFailureLabel.setVisible(false);
         pane.add(textField,BorderLayout.SOUTH);
         textField.setVisible(false);
         pane.add(innerPane,BorderLayout.CENTER);
@@ -270,11 +261,25 @@ class ChatClient extends JFrame {
         }
     }
 
+    private void handleLogout(){
+        logoutButton.addActionListener(e->{
+            String login = loginField.getText();
+            String password = passField.getText();
+            sendMessage("logout&" + login + "&" + password);
+            remove(loggedPane);
+            enterButton.setVisible(false);
+            textField.setVisible(false);
+            loginField.setText("");
+            passField.setText("");
+            loginPane.setVisible(true);
+        });
+    }
+
     private void initializeLogin(){
         String login = loginField.getText();
         String password = passField.getText();
         if(!login.equals("") && !password.equals("")){
-            sendMessage(login + "&" + password);
+            sendMessage("login&" + login + "&" + password);
         }
     }
 
@@ -305,5 +310,6 @@ class ChatClient extends JFrame {
         handlePressEnter();
         handleClickButton();
         handleLogin();
+        handleLogout();
     }
 }

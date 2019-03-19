@@ -5,10 +5,11 @@ import java.util.HashMap;
 
 class ClientsDB {
     private static HashMap<String,Integer> clients = new HashMap<>();
+    private final String PATH_TO_DB = "ClientsDB.txt";
 
     ClientsDB(){
         try{
-            File fileDB = new File("E:/Code/Java/Java2/src/Server/ClientsDB.txt");
+            File fileDB = new File(PATH_TO_DB);
             FileInputStream fileInputStream = new FileInputStream(fileDB);
             BufferedReader buffReader = new BufferedReader(new InputStreamReader(fileInputStream));
             String strLine;
@@ -41,7 +42,7 @@ class ClientsDB {
 
     private void writeToDB(String login, String pass){
         try{
-            File fileDB = new File("E:/Code/Java/Java2/src/Server/ClientsDB.txt");
+            File fileDB = new File(PATH_TO_DB);
             FileWriter writer = new FileWriter(fileDB, true);
             BufferedWriter bufferWriter = new BufferedWriter(writer);
             bufferWriter.write("\n" +login + " " + (pass.hashCode()));
