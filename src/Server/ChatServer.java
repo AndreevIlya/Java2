@@ -109,7 +109,7 @@ class ChatServer {
         return false;
     }
 
-    private static void listenToInputStream (Client client, Socket socket) throws IOException {
+    private static void listenToInputStream (Client client, Socket socket, ClientService clientService) throws IOException {
         if (!socket.isClosed()) {
             String[] data = client.getInputStream().readUTF().split("&");
             System.out.println("listen " + data[0]);
@@ -140,6 +140,9 @@ class ChatServer {
                         e.printStackTrace();
                     }
                     break;
+                case "message":
+                    System.out.println("Received message");
+                    clientService.processMessage(data[1]);
             }
         }
     }
@@ -153,17 +156,16 @@ class ChatServer {
         clientStorage.addClient(client);
         outputStream.writeUTF("logged");
         client.addLogins();
-        startListenThread(client,socket);
-        new Thread(() -> new ClientService(client, messageService, clientStorage)
-                .processMessage()).start();
+        ClientService clientService = new ClientService(client, messageService, clientStorage);
+        startListenThread(client,socket, clientService);
         return client;
     }
 
-    private static void startListenThread(Client client, Socket socket){
+    private static void startListenThread(Client client, Socket socket,ClientService clientService){
         Thread logoutThread = new Thread(() -> {
             while (true) {
                 try {
-                    listenToInputStream(client, socket);
+                    listenToInputStream(client, socket,clientService);
                 }catch (SocketException e) {
                     e.printStackTrace();
                     System.out.println("Listener failed");

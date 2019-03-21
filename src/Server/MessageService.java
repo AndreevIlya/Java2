@@ -13,7 +13,7 @@ class MessageService {
         clientStorage.getClients().forEach(client -> {
             try {
                 System.out.println(String.format("sending message '%s' to '%s'", message, client));
-                client.getOutputStream().writeUTF(message + "\n");
+                client.getOutputStream().writeUTF(message);
             } catch (IOException e) {
                 e.printStackTrace();
             }

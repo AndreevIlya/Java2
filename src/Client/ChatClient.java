@@ -27,14 +27,9 @@ class ChatClient extends JFrame {
     private JLabel loggingFailureLabel = createLabel();
     private JLabel loggingSuccessLabel = createLabel();
 
-
     private Socket socket;
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
-
-    public static void main(String[] args) {
-        new ChatClient();
-    }
 
     ChatClient(){
         drawWindow();
@@ -58,22 +53,27 @@ class ChatClient extends JFrame {
         if (!socket.isClosed()) {
             try {
                 String[] messageFromServer = inputStream.readUTF().split("&");
-                if (messageFromServer[0].equals("fail")) {
-                    System.out.println("failed to login");
-                    addLogFailureLabel("Login is already occupied and has another password.");
-                }else if (messageFromServer[0].equals("occupied")) {
-                    System.out.println(loginField.getText() + " is already logged in.");
-                    addLogFailureLabel(loginField.getText() + " is already logged in.");
-                } else if (messageFromServer[0].equals("logged")) {
-                    addLoggedElements(loginField.getText());
-                    System.out.println("Logged in.");
-                } else if (messageFromServer[0].equals("logout")) {
-                    addLoginPane();
-                    System.out.println("Logged in.");
-                } else if (!messageFromServer[0].equals("message")) {
-                    textArea.append("Server: ");
-                    Message readyMessage = new Message(messageFromServer[1]);
-                    readyMessage.writeMessage();
+                switch (messageFromServer[0]) {
+                    case "fail":
+                        System.out.println("failed to login");
+                        addLogFailureLabel("Login is already occupied and has another password.");
+                        break;
+                    case "occupied":
+                        System.out.println(loginField.getText() + " is already logged in.");
+                        addLogFailureLabel(loginField.getText() + " is already logged in.");
+                        break;
+                    case "logged":
+                        addLoggedElements(loginField.getText());
+                        System.out.println("Logged in.");
+                        break;
+                    case "logout":
+                        addLoginPane();
+                        System.out.println("Logged in.");
+                        break;
+                    case "message":
+                        System.out.println("got " + messageFromServer[1]);
+                        putMessage(messageFromServer[1], messageFromServer[2]);
+                        break;
                 }
             } catch(EOFException exc){
                 System.out.println("Full halt.");
@@ -219,60 +219,9 @@ class ChatClient extends JFrame {
         return label;
     }
 
-    private class Message{
-        private String message;
-        private final int width = 45;
-        private int rowsCount = 1;
-
-        Message(String message){
-            this.message = message;
-        }
-
-        private String splitMessage(){
-            StringBuilder splitMessage = new StringBuilder();
-            int lineLength = message.length();
-            int wordsLength = 0;
-            if(lineLength >= width){
-                String[] words = message.split(" ");
-                for(String word : words){
-                    wordsLength += word.length() + 1;
-                    if(wordsLength > width){
-                        splitMessage.append("\n").append(word).append(" ");
-                        wordsLength = word.length() + 1;
-                        rowsCount++;
-                    }else{
-                        splitMessage.append(word).append(" ");
-                    }
-                }
-                splitMessage.append("\n");
-                return splitMessage.toString();
-            }else{
-                return message + "\n";
-            }
-        }
-
-        private String getTime(){
-            StringBuilder time = new StringBuilder(new SimpleDateFormat("HH:mm:ss dd.MM.yyyy").format(Calendar.getInstance().getTime()));
-            for(int i = 0; i < rowsCount; i++){
-                time.append("\n");
-            }
-            return time.toString();
-        }
-
-        private void writeMessage(){
-            textArea.append(splitMessage());
-            timeArea.append(getTime());
-        }
-    }
-
-    private void putMessage(String message) {
-        if(!message.equals("")) {
-            textField.setText("");
-            textArea.append("You: ");
-            Message readyMessage = new Message(message);
-            readyMessage.writeMessage();
-            sendMessage(message);
-        }
+    private void putMessage(String message,String time) {
+        timeArea.append(time);
+        textArea.append(message);
     }
 
     private void sendMessage(String message) {
@@ -312,14 +261,23 @@ class ChatClient extends JFrame {
 
     private void handleClickButton(){
         enterButton.addActionListener(e -> {
-                putMessage(textField.getText());
+            String message = textField.getText();
+            if(!message.equals("")) {
+                textField.setText("");
                 textField.requestFocus();
+                sendMessage("message&" + message);
             }
-        );
+        });
     }
 
     private void handlePressEnter(){
-        textField.addActionListener(e -> putMessage(textField.getText()));
+        textField.addActionListener(e -> {
+            String message = textField.getText();
+            if(!message.equals("")) {
+                textField.setText("");
+                sendMessage("message&" + message);
+            }
+        });
     }
 
     private void addListeners(){
