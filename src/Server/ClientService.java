@@ -25,6 +25,18 @@ class ClientService {
         messageService.sendMessages(message);
     }
 
+    void processPrivateMessage(String login,String message) {
+        if(clientStorage.containsClient(login)) {
+            System.out.println(String.format("received message '%s' to '%s'", message, client));
+            Message processedMessage = new Message(message);
+            message = "message&" + client.getLogin() + " to " + login + ": " +
+                    processedMessage.splitMessage() + "&" +
+                    processedMessage.getTime();
+
+            messageService.sendPrivateMessage(login, message);
+        }
+    }
+
     private class Message{
         private String message;
         private final int width = 45;

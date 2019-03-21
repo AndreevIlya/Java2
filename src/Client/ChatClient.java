@@ -68,7 +68,7 @@ class ChatClient extends JFrame {
                         break;
                     case "logout":
                         addLoginPane();
-                        System.out.println("Logged in.");
+                        System.out.println("Logged out.");
                         break;
                     case "message":
                         System.out.println("got " + messageFromServer[1]);
@@ -113,6 +113,8 @@ class ChatClient extends JFrame {
         loginPane.add(loginButton);
         add(pane,BorderLayout.CENTER);
         pane.add(innerPane,BorderLayout.CENTER);
+        textArea.setText("Start message with \'pm&\' \nto write a private message. \nLike pm&Ilya&.\n");
+        timeArea.setText("\n\n\n");
         innerPane.add(new JScrollPane(textArea));
         innerPane.add(new JScrollPane(timeArea));
     }
@@ -265,7 +267,12 @@ class ChatClient extends JFrame {
             if(!message.equals("")) {
                 textField.setText("");
                 textField.requestFocus();
-                sendMessage("message&" + message);
+                System.out.println(message);
+                if(message.charAt(0) == 'p' && message.charAt(1) == 'm' && message.charAt(2) == '&'){
+                    sendMessage(message);
+                }else{
+                    sendMessage("message&" + message);
+                }
             }
         });
     }
@@ -275,7 +282,12 @@ class ChatClient extends JFrame {
             String message = textField.getText();
             if(!message.equals("")) {
                 textField.setText("");
-                sendMessage("message&" + message);
+                System.out.println(message);
+                if(message.charAt(0) == 'p' && message.charAt(1) == 'm' && message.charAt(2) == '&'){
+                    sendMessage(message);
+                }else{
+                    sendMessage("message&" + message);
+                }
             }
         });
     }

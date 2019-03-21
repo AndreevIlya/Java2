@@ -119,7 +119,7 @@ class ChatServer {
                         System.out.println("Client connected again: " + client + "::" + socket);
                         clientStorage.addClient(client);
                         client.getOutputStream().writeUTF("logged");
-                        client.addLogins();
+                        clientService.processMessage(data[1] + " enters chat.");
                     } else {
                         System.out.println("Attempt to login failed for " + data[1] + " " + data[2]);
                         client.getOutputStream().writeUTF("fail");
@@ -129,11 +129,13 @@ class ChatServer {
                     System.out.println("Client disconnected:" + client + "::" + socket);
                     client.getOutputStream().writeUTF("logout");
                     clientStorage.removeClient(client);
+                    clientService.processMessage(data[1] + " leaves chat.");
                     break;
                 case "logoutFull":
                     System.out.println("Client is off.");
                     try {
                         System.out.println("Socket for " + client + " is off");
+                        clientService.processMessage(data[1] + " leaves chat.");
                         socket.close();
                     } catch (IOException e) {
                         System.out.println("Unable to close socket");
@@ -143,6 +145,10 @@ class ChatServer {
                 case "message":
                     System.out.println("Received message");
                     clientService.processMessage(data[1]);
+                    break;
+                case "pm":
+                    System.out.println("Received private message");
+                    clientService.processPrivateMessage(data[1],data[2]);
             }
         }
     }
@@ -157,6 +163,7 @@ class ChatServer {
         outputStream.writeUTF("logged");
         client.addLogins();
         ClientService clientService = new ClientService(client, messageService, clientStorage);
+        clientService.processMessage(data[1] + " enters chat.");
         startListenThread(client,socket, clientService);
         return client;
     }

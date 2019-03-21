@@ -18,6 +18,16 @@ class MessageService {
                 e.printStackTrace();
             }
         });
+    }
 
+    synchronized void sendPrivateMessage(String login,String message) {
+        try {
+            Client receiver = clientStorage.findClient(login);
+            if(receiver != null){
+                receiver.getOutputStream().writeUTF(message);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
