@@ -8,6 +8,7 @@ class Client {
     private final int passwordHash;
     private final DataInputStream is;
     private final DataOutputStream os;
+    private int logins = 0;
 
 
     Client(String login, String password, DataInputStream is, DataOutputStream os) {
@@ -25,12 +26,20 @@ class Client {
         return passwordHash;
     }
 
-    DataInputStream getIs() {
+    DataInputStream getInputStream() {
         return is;
     }
 
-    DataOutputStream getOs() {
+    DataOutputStream getOutputStream() {
         return os;
+    }
+
+    void addLogins(){
+        logins++;
+    }
+
+    int getLogins() {
+        return logins;
     }
 
     @Override
@@ -39,6 +48,7 @@ class Client {
                 "login='" + login + '\'' +
                 '}';
     }
+
 
 
 }

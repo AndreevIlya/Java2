@@ -26,6 +26,15 @@ class ClientStorage {
         return null;
     }
 
+    boolean containsClient(String login){
+        for (Client client : clients){
+            if (client.getLogin().equals(login)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     List<Client> getClients() {
         return clients;
     }
