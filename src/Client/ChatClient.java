@@ -7,6 +7,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
 
@@ -35,23 +36,29 @@ class ChatClient extends JFrame {
         drawWindow();
         setElementsInit();
         addListeners();
-        initConnection();
+        try {
+            initConnection();
+        } catch (ConnectException e) {
+            reConnect();
+        }
         initReceiver();
         setVisible(true);
     }
 
-    private void initConnection() {
+    private void initConnection() throws ConnectException{
         try {
             socket = new Socket("192.168.1.103", 4444);
             outputStream = new DataOutputStream(socket.getOutputStream());
             inputStream = new DataInputStream(socket.getInputStream());
             System.out.println("Connection initialized");
+        } catch (ConnectException e) {
+            throw e;
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void handleInput(){
+    private void handleInput() throws SocketException{
         if (!socket.isClosed()) {
             try {
                 String[] data = inputStream.readUTF().split("&");
@@ -81,12 +88,7 @@ class ChatClient extends JFrame {
                         break;
                 }
             } catch (SocketException exc){
-                textArea.append("Server is down.");
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                throw exc;
             }catch(EOFException exc){
                 System.out.println("Full halt.");
                 System.exit(0);
@@ -99,7 +101,19 @@ class ChatClient extends JFrame {
     private void initReceiver(){
         Thread thread = new Thread(() -> {
             while (true) {
-                handleInput();
+                try {
+                    handleInput();
+                }catch (SocketException exc){
+                    textArea.append("Server is down.\n");
+                    try {
+                        socket.close();
+                        reConnect();
+                        break;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        break;
+                    }
+                }
             }
         });
         thread.setDaemon(true);
@@ -328,5 +342,26 @@ class ChatClient extends JFrame {
             }
             }
         });
+    }
+
+    private void reConnect(){
+        int attempt;
+        for(attempt = 0; attempt < 5;attempt++){
+            try {
+                textArea.append("Trying to connect...\n");
+                Thread.sleep(10000);
+                initConnection();
+                initReceiver();
+                textArea.append("Connection reestablished.\n");
+                sendMessage("reconnect");
+                if(logged) handleLogin();
+                break;
+            } catch (ConnectException e) {
+                textArea.append("Reconnection failed.\n");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if(attempt == 5) textArea.append("Unable to connect. Try again later.\n");
     }
 }

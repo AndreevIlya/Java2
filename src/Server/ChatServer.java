@@ -23,30 +23,37 @@ class ChatServer {
                 DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
                 String[] data = inputStream.readUTF().split("&");
                 System.out.println("New " + data[0]);
-                if (data[0].equals("login")) {
-                    if (clientsDB.isClientNotInDB(data[1])) {
-                        clientsDB.addToDB(data[1], data[2]);
-                        Client client = createClient(data,inputStream,outputStream,socket);
-                        System.out.println("New client connected:" + client + "::" + socket);
-                    } else {
-                        if (clientsDB.checkAuth(data[1], data[2])) {
-                            Client client = createClient(data,inputStream,outputStream,socket);
-                            System.out.println("Old client connected:" + client + "::" + socket);
+                switch (data[0]) {
+                    case "login":
+                        if (clientsDB.isClientNotInDB(data[1])) {
+                            clientsDB.addToDB(data[1], data[2]);
+                            Client client = createClient(data, inputStream, outputStream, socket);
+                            System.out.println("New client connected:" + client + "::" + socket);
                         } else {
-                            System.out.println("Attempt to login failed for " + data[1] + " " + data[2]);
-                            outputStream.writeUTF("fail");
-                            startLoginAfterFailureThread(socket, inputStream, outputStream);
+                            if (clientsDB.checkAuth(data[1], data[2])) {
+                                Client client = createClient(data, inputStream, outputStream, socket);
+                                System.out.println("Old client connected:" + client + "::" + socket);
+                            } else {
+                                System.out.println("Attempt to login failed for " + data[1] + " " + data[2]);
+                                outputStream.writeUTF("fail");
+                                startLoginAfterFailureThread(socket, inputStream, outputStream);
+                            }
                         }
-                    }
-                }else if (data[0].equals("exit")) {
-                    System.out.println("Exit.");
-                    try {
-                        System.out.println("Socket closed.");
-                        socket.close();
-                    } catch (IOException e) {
-                        System.out.println("Unable to close socket");
-                        e.printStackTrace();
-                    }
+                        break;
+                    case "exit":
+                        System.out.println("Exit.");
+                        try {
+                            System.out.println("Socket closed.");
+                            socket.close();
+                        } catch (IOException e) {
+                            System.out.println("Unable to close socket");
+                            e.printStackTrace();
+                        }
+                        break;
+                    case "reconnect":
+                        System.out.println("Reconnection started.");
+                        startLoginAfterFailureThread(socket, inputStream, outputStream);
+                        break;
                 }
             }
         }
@@ -74,8 +81,10 @@ class ChatServer {
                 }catch (SocketException e) {
                     e.printStackTrace();
                     System.out.println("Listener failed");
+                    break;
                 } catch (IOException e) {
                     e.printStackTrace();
+                    break;
                 }
             }
         });
@@ -87,10 +96,11 @@ class ChatServer {
         Thread loginAfter = new Thread(() -> {
             while (true) {
                 try {
-                    if(loginAfterFailure(socket,inputStream,outputStream)) return;
+                    if(loginAfterFailure(socket,inputStream,outputStream)) break;
                 } catch (IOException e) {
                     System.out.println("Failed after failure");
                     e.printStackTrace();
+                    break;
                 }
             }
         });
