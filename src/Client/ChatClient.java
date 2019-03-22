@@ -12,13 +12,13 @@ import java.net.Socket;
 import java.net.SocketException;
 
 class ChatClient extends JFrame {
-    private JButton enterButton = createSendButton("Enter");
+    JButton enterButton = createSendButton("Enter");
     private JButton loginButton = createSendButton("Log in");
     private JButton logoutButton = createSendButton("Log out");
-    private JTextField textField = createTextField();
+    JTextField textField = createTextField();
     private JTextField loginField = createTextField();
     private JTextField passField = createTextField();
-    private JTextArea textArea = createTextArea();
+    JTextArea textArea = createTextArea();
     private JTextArea timeArea = createTextArea();
     private JPanel pane = createPane();
     private JPanel innerPane = createColumnPane(2);
@@ -252,7 +252,7 @@ class ChatClient extends JFrame {
         textArea.append(message);
     }
 
-    private void sendMessage(String message) {
+    void sendMessage(String message) {
         try {
             outputStream.writeUTF(message);
         } catch (IOException e) {
@@ -283,7 +283,7 @@ class ChatClient extends JFrame {
         passField.addActionListener(e-> handleLogin());
     }
 
-    private void addClickButtonHandler(){
+    void addClickButtonHandler(){
         enterButton.addActionListener(e -> {
             String message = textField.getText();
             if(!message.equals("")) {
@@ -299,7 +299,7 @@ class ChatClient extends JFrame {
         });
     }
 
-    private void addPressEnterHandler(){
+    void addPressEnterHandler(){
         textField.addActionListener(e -> {
             String message = textField.getText();
             if(!message.equals("")) {
