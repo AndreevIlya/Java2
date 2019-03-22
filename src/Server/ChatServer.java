@@ -8,44 +8,6 @@ import java.net.Socket;
 import java.net.SocketException;
 
 class ChatServer {
-    /*private static Scanner scanner = new Scanner(System.in);
-    private final static int PORT = 8080;
-
-    static void runServer() {
-        try(ServerSocket serverSocket = new ServerSocket(PORT)) {
-            System.out.println("Server started");
-            Socket socket = serverSocket.accept();
-            System.out.println("Client connected " + socket);
-
-            Thread threadIn = new Thread(() -> {
-                try (DataInputStream inputStream = new DataInputStream(socket.getInputStream())) {
-                    while (true) {
-                        String message = inputStream.readUTF();
-                        System.out.println("Received message: " + message);
-                    }
-                } catch (IOException e) {
-                        e.printStackTrace();
-                }
-            });
-            threadIn.setDaemon(true);
-            threadIn.start();
-            Thread threadOut = new Thread(() -> {
-                try (DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream())) {
-                    while (true) {
-                        String message = scanner.nextLine();
-                        outputStream.writeUTF(message);
-                    }
-                } catch (IOException e) {
-                        e.printStackTrace();
-                }
-            });
-            threadOut.setDaemon(true);
-            threadOut.start();
-            System.out.println("In and out threads started.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }*/
     private static ClientsDB clientsDB = new ClientsDB();
     private static ClientStorage clientStorage = new ClientStorage();
     private static MessageService messageService = new MessageService(clientStorage);
@@ -79,6 +41,52 @@ class ChatServer {
                 }
             }
         }
+    }
+
+    private static Client createClient(
+            String[] data,
+            DataInputStream inputStream,
+            DataOutputStream outputStream,
+            Socket socket) throws IOException{
+        Client client = new Client(data[1], data[2], inputStream, outputStream);
+        clientStorage.addClient(client);
+        outputStream.writeUTF("logged");
+        ClientService clientService = new ClientService(client, messageService, clientStorage);
+        clientService.processMessage(data[1] + " enters chat.");
+        startListenThread(client,socket, clientService);
+        return client;
+    }
+
+    private static void startListenThread(Client client, Socket socket,ClientService clientService){
+        Thread logoutThread = new Thread(() -> {
+            while (true) {
+                try {
+                    listenToInputStream(client, socket,clientService);
+                }catch (SocketException e) {
+                    e.printStackTrace();
+                    System.out.println("Listener failed");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        logoutThread.setDaemon(true);
+        logoutThread.start();
+    }
+
+    private static void startLoginAfterFailureThread(Socket socket,DataInputStream inputStream,DataOutputStream outputStream){
+        Thread loginAfter = new Thread(() -> {
+            while (true) {
+                try {
+                    if(loginAfterFailure(socket,inputStream,outputStream)) return;
+                } catch (IOException e) {
+                    System.out.println("Failed after failure");
+                    e.printStackTrace();
+                }
+            }
+        });
+        loginAfter.setDaemon(true);
+        loginAfter.start();
     }
 
     private static boolean loginAfterFailure(Socket socket,DataInputStream inputStream,DataOutputStream outputStream) throws IOException{
@@ -151,52 +159,5 @@ class ChatServer {
                     clientService.processPrivateMessage(data[1],data[2]);
             }
         }
-    }
-
-    private static Client createClient(
-            String[] data,
-            DataInputStream inputStream,
-            DataOutputStream outputStream,
-            Socket socket) throws IOException{
-        Client client = new Client(data[1], data[2], inputStream, outputStream);
-        clientStorage.addClient(client);
-        outputStream.writeUTF("logged");
-        client.addLogins();
-        ClientService clientService = new ClientService(client, messageService, clientStorage);
-        clientService.processMessage(data[1] + " enters chat.");
-        startListenThread(client,socket, clientService);
-        return client;
-    }
-
-    private static void startListenThread(Client client, Socket socket,ClientService clientService){
-        Thread logoutThread = new Thread(() -> {
-            while (true) {
-                try {
-                    listenToInputStream(client, socket,clientService);
-                }catch (SocketException e) {
-                    e.printStackTrace();
-                    System.out.println("Listener failed");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        logoutThread.setDaemon(true);
-        logoutThread.start();
-    }
-
-    private static void startLoginAfterFailureThread(Socket socket,DataInputStream inputStream,DataOutputStream outputStream){
-        Thread loginAfter = new Thread(() -> {
-            while (true) {
-                try {
-                    if(loginAfterFailure(socket,inputStream,outputStream)) return;
-                } catch (IOException e) {
-                    System.out.println("Failed after failure");
-                    e.printStackTrace();
-                }
-            }
-        });
-        loginAfter.setDaemon(true);
-        loginAfter.start();
     }
 }

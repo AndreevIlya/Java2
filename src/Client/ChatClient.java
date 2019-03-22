@@ -8,8 +8,6 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 class ChatClient extends JFrame {
     private JButton enterButton = createSendButton("Enter");
@@ -234,7 +232,7 @@ class ChatClient extends JFrame {
         }
     }
 
-    private void handleLogout(){
+    private void addLogoutHandler(){
         logoutButton.addActionListener(e->{
             System.out.println("Logging out");
             String login = loginField.getText();
@@ -261,7 +259,7 @@ class ChatClient extends JFrame {
         passField.addActionListener(e-> handleLogin());
     }
 
-    private void handleClickButton(){
+    private void addClickButtonHandler(){
         enterButton.addActionListener(e -> {
             String message = textField.getText();
             if(!message.equals("")) {
@@ -277,7 +275,7 @@ class ChatClient extends JFrame {
         });
     }
 
-    private void handlePressEnter(){
+    private void addPressEnterHandler(){
         textField.addActionListener(e -> {
             String message = textField.getText();
             if(!message.equals("")) {
@@ -298,10 +296,10 @@ class ChatClient extends JFrame {
                 textField.requestFocusInWindow();
             }
         });
-        handlePressEnter();
-        handleClickButton();
+        addPressEnterHandler();
+        addClickButtonHandler();
         addLoginHandler();
-        handleLogout();
+        addLogoutHandler();
         addCloseWindowHandler();
     }
 
