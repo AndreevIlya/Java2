@@ -3,6 +3,7 @@ package Client;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -26,6 +27,8 @@ class ChatClient extends JFrame {
     private JPanel loggedPane = createPane();
     private JLabel loggingFailureLabel = createLabel();
     private JLabel loggingSuccessLabel = createLabel();
+    private JScrollPane scrollTextArea = new JScrollPane(textArea);
+    private JScrollPane scrollTimeArea = new JScrollPane(timeArea);
 
     private Socket socket;
     private DataOutputStream outputStream;
@@ -75,6 +78,7 @@ class ChatClient extends JFrame {
                     case "logged":
                         addLoggedElements(loginField.getText());
                         System.out.println("Logged in.");
+                        textField.requestFocus();
                         logged = true;
                         break;
                     case "logout":
@@ -141,8 +145,8 @@ class ChatClient extends JFrame {
         pane.add(innerPane,BorderLayout.CENTER);
         textArea.setText("Start message with \'pm&\' \nto write a private message. \nLike pm&Ilya&.\n");
         timeArea.setText("\n\n\n");
-        innerPane.add(new JScrollPane(textArea));
-        innerPane.add(new JScrollPane(timeArea));
+        innerPane.add(scrollTextArea);
+        innerPane.add(scrollTimeArea);
     }
 
     private void addLogFailureLabel(String message){
@@ -325,6 +329,7 @@ class ChatClient extends JFrame {
         addLoginHandler();
         addLogoutHandler();
         addCloseWindowHandler();
+        addScrollHandler();
     }
 
     private void addCloseWindowHandler(){
@@ -341,6 +346,19 @@ class ChatClient extends JFrame {
                 }
             }
             }
+        });
+    }
+
+    private void addScrollHandler(){
+        scrollTextArea.getVerticalScrollBar().getAccessibleContext()
+                .addPropertyChangeListener((PropertyChangeEvent e) -> {
+            int scrollValue = scrollTextArea.getVerticalScrollBar().getValue();
+            scrollTimeArea.getVerticalScrollBar().setValue(scrollValue);
+        });
+        scrollTimeArea.getVerticalScrollBar().getAccessibleContext()
+                .addPropertyChangeListener((PropertyChangeEvent e) -> {
+            int scrollValue = scrollTimeArea.getVerticalScrollBar().getValue();
+            scrollTextArea.getVerticalScrollBar().setValue(scrollValue);
         });
     }
 
