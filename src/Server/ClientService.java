@@ -28,12 +28,16 @@ class ClientService {
     void processPrivateMessage(String login,String message) {
         if(clientStorage.containsClient(login)) {
             System.out.println(String.format("received message '%s' to '%s'", message, client));
-            Message processedMessage = new Message(message);
-            message = "message&" + client.getLogin() + " to " + login + ": " +
-                    processedMessage.splitMessage() + "&" +
-                    processedMessage.getTime();
-
-            messageService.sendPrivateMessage(login, message);
+            if(client.getLogin().equals(login)){
+                messageService.sendPrivateMessage(login, "You cannot write to yourself.");
+            }else{
+                Message messageToSend = new Message(message);
+                message = "message&" + client.getLogin() + " to " + login + ": " +
+                        messageToSend.splitMessage() + "&" +
+                        messageToSend.getTime();
+                messageService.sendPrivateMessage(login, message);
+                messageService.sendPrivateMessage(client.getLogin(), message);
+            }
         }
     }
 

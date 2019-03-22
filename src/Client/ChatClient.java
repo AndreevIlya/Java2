@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 
 class ChatClient extends JFrame {
     private JButton enterButton = createSendButton("Enter");
@@ -28,11 +29,14 @@ class ChatClient extends JFrame {
     private Socket socket;
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
+    private boolean logged = false;
 
     ChatClient(){
         drawWindow();
         setElementsInit();
         addListeners();
+        initConnection();
+        initReceiver();
         setVisible(true);
     }
 
@@ -50,8 +54,9 @@ class ChatClient extends JFrame {
     private void handleInput(){
         if (!socket.isClosed()) {
             try {
-                String[] messageFromServer = inputStream.readUTF().split("&");
-                switch (messageFromServer[0]) {
+                String[] data = inputStream.readUTF().split("&");
+                System.out.println(data[0]);
+                switch (data[0]) {
                     case "fail":
                         System.out.println("failed to login");
                         addLogFailureLabel("Login is already occupied and has another password.");
@@ -63,17 +68,26 @@ class ChatClient extends JFrame {
                     case "logged":
                         addLoggedElements(loginField.getText());
                         System.out.println("Logged in.");
+                        logged = true;
                         break;
                     case "logout":
                         addLoginPane();
                         System.out.println("Logged out.");
+                        logged = false;
                         break;
                     case "message":
-                        System.out.println("got " + messageFromServer[1]);
-                        putMessage(messageFromServer[1], messageFromServer[2]);
+                        System.out.println("got " + data[1]);
+                        putMessage(data[1], data[2]);
                         break;
                 }
-            } catch(EOFException exc){
+            } catch (SocketException exc){
+                textArea.append("Server is down.");
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }catch(EOFException exc){
                 System.out.println("Full halt.");
                 System.exit(0);
             } catch (IOException e) {
@@ -241,10 +255,6 @@ class ChatClient extends JFrame {
     }
 
     private void handleLogin(){
-        if (socket == null || socket.isClosed()) {
-            initConnection();
-            initReceiver();
-        }
         String login = loginField.getText();
         String password = passField.getText();
         if(!login.equals("") && !password.equals("")){
@@ -307,9 +317,15 @@ class ChatClient extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                System.out.println("Closing window");
-                String login = loginField.getText();
-                sendMessage("logoutFull&" + login);
+            System.out.println("Closing window");
+            if(!socket.isClosed()){
+                if (logged){
+                    String login = loginField.getText();
+                    sendMessage("logoutFull&" + login);
+                }else{
+                    sendMessage("exit");
+                }
+            }
             }
         });
     }

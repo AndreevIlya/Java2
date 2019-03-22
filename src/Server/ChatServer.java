@@ -22,7 +22,7 @@ class ChatServer {
                 DataInputStream inputStream = new DataInputStream(socket.getInputStream());
                 DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
                 String[] data = inputStream.readUTF().split("&");
-                System.out.println("New" + data[0]);
+                System.out.println("New " + data[0]);
                 if (data[0].equals("login")) {
                     if (clientsDB.isClientNotInDB(data[1])) {
                         clientsDB.addToDB(data[1], data[2]);
@@ -37,6 +37,15 @@ class ChatServer {
                             outputStream.writeUTF("fail");
                             startLoginAfterFailureThread(socket, inputStream, outputStream);
                         }
+                    }
+                }else if (data[0].equals("exit")) {
+                    System.out.println("Exit.");
+                    try {
+                        System.out.println("Socket closed.");
+                        socket.close();
+                    } catch (IOException e) {
+                        System.out.println("Unable to close socket");
+                        e.printStackTrace();
                     }
                 }
             }
@@ -141,9 +150,20 @@ class ChatServer {
                     break;
                 case "logoutFull":
                     System.out.println("Client is off.");
+                    clientStorage.removeClient(client);
                     try {
                         System.out.println("Socket for " + client + " is off");
                         clientService.processMessage(data[1] + " leaves chat.");
+                        socket.close();
+                    } catch (IOException e) {
+                        System.out.println("Unable to close socket");
+                        e.printStackTrace();
+                    }
+                    break;
+                case "exit":
+                    System.out.println("Exit.");
+                    try {
+                        System.out.println("Socket closed.");
                         socket.close();
                     } catch (IOException e) {
                         System.out.println("Unable to close socket");

@@ -23,6 +23,7 @@ class MessageService {
     synchronized void sendPrivateMessage(String login,String message) {
         try {
             Client receiver = clientStorage.findClient(login);
+            System.out.println(receiver);
             if(receiver != null){
                 receiver.getOutputStream().writeUTF(message);
             }
