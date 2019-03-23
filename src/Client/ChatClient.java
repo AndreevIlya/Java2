@@ -11,8 +11,10 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Map;
 
-class ChatClient extends JFrame {
+class ChatClient extends JFrame{
     JButton enterButton = createSendButton("Enter");
     private JButton loginButton = createSendButton("Log in");
     private JButton logoutButton = createSendButton("Log out");
@@ -34,6 +36,8 @@ class ChatClient extends JFrame {
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
     private boolean logged = false;
+
+    private Map<String,Responder> responderMap = initResponderMap();
 
     ChatClient(){
         drawWindow();
@@ -61,47 +65,6 @@ class ChatClient extends JFrame {
         }
     }
 
-    private void handleInput() throws SocketException{
-        if (!socket.isClosed()) {
-            try {
-                String[] data = inputStream.readUTF().split("&");
-                System.out.println(data[0]);
-                switch (data[0]) {
-                    case "fail":
-                        System.out.println("failed to login");
-                        addLogFailureLabel("Login is already occupied and has another password.");
-                        break;
-                    case "occupied":
-                        System.out.println(loginField.getText() + " is already logged in.");
-                        addLogFailureLabel(loginField.getText() + " is already logged in.");
-                        break;
-                    case "logged":
-                        addLoggedElements(loginField.getText());
-                        System.out.println("Logged in.");
-                        textField.requestFocus();
-                        logged = true;
-                        break;
-                    case "logout":
-                        addLoginPane();
-                        System.out.println("Logged out.");
-                        logged = false;
-                        break;
-                    case "message":
-                        System.out.println("got " + data[1]);
-                        putMessage(data[1], data[2]);
-                        break;
-                }
-            } catch (SocketException exc){
-                throw exc;
-            }catch(EOFException exc){
-                System.out.println("Full halt.");
-                System.exit(0);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     private void initReceiver(){
         Thread thread = new Thread(() -> {
             while (true) {
@@ -123,6 +86,183 @@ class ChatClient extends JFrame {
         thread.setDaemon(true);
         thread.start();
         System.out.println("receiver started");
+    }
+
+    private void handleInput() throws SocketException{
+        if (!socket.isClosed()) {
+            try {
+                String[] data = inputStream.readUTF().split("&");
+                System.out.println(data[0]);
+                responderMap.get(data[0]).respond(data);
+            } catch (SocketException exc){
+                throw exc;
+            }catch(EOFException exc){
+                System.out.println("Full halt.");
+                System.exit(0);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private Map<String, Responder> initResponderMap() {
+        HashMap<String,Responder> map = new HashMap<>();
+        map.put("fail", s -> {
+            System.out.println("failed to login");
+            addLogFailureLabel("Login is already occupied and has another password.");
+        });
+        map.put("occupied", s -> {
+            System.out.println(loginField.getText() + " is already logged in.");
+            addLogFailureLabel(loginField.getText() + " is already logged in.");
+        });
+        map.put("logged", s -> {
+            addLoggedElements(loginField.getText());
+            System.out.println("Logged in.");
+            textField.requestFocus();
+            logged = true;
+        });
+        map.put("logout", s -> {
+            addLoginPane();
+            System.out.println("Logged out.");
+            logged = false;
+        });
+        map.put("message", s -> {
+            System.out.println("Received " + s[1] + " at " + s[2]);
+            textArea.append(s[1]);
+            timeArea.append(s[2]);
+        });
+        return map;
+    }
+
+    private interface Responder {
+        void respond(String[] s);
+    }
+
+    void sendMessage(String message) {
+        try {
+            outputStream.writeUTF(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void reConnect(){
+        int attempt;
+        for(attempt = 0; attempt < 5;attempt++){
+            try {
+                textArea.append("Trying to connect...\n");
+                Thread.sleep(10000);
+                initConnection();
+                initReceiver();
+                textArea.append("Connection reestablished.\n");
+                sendMessage("reconnect");
+                if(logged) handleLogin();
+                break;
+            } catch (ConnectException e) {
+                textArea.append("Reconnection failed.\n");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if(attempt == 5) textArea.append("Unable to connect. Try again later.\n");
+    }
+
+    private void addListeners(){
+        addWindowFocusListener(new WindowAdapter() {
+            public void windowGainedFocus(WindowEvent e) {
+                textField.requestFocusInWindow();
+            }
+        });
+        addPressEnterHandler();
+        addClickButtonHandler();
+        addLoginHandler();
+        addLogoutHandler();
+        addCloseWindowHandler();
+        addScrollHandler();
+    }
+
+    private void addLogoutHandler(){
+        logoutButton.addActionListener(e->{
+            System.out.println("Logging out");
+            String login = loginField.getText();
+            sendMessage("logout&" + login);
+        });
+    }
+
+    private void handleLogin(){
+        String login = loginField.getText();
+        String password = passField.getText();
+        if(!login.equals("") && !password.equals("")){
+            System.out.println(login + " tries to log in.");
+            sendMessage("login&" + login + "&" + password);
+        }
+    }
+
+    private void addLoginHandler(){
+        loginButton.addActionListener(e-> handleLogin());
+        loginField.addActionListener(e-> handleLogin());
+        passField.addActionListener(e-> handleLogin());
+    }
+
+    void addClickButtonHandler(){
+        enterButton.addActionListener(e -> {
+            String message = textField.getText();
+            if(!message.equals("")) {
+                textField.setText("");
+                textField.requestFocus();
+                System.out.println(message);
+                if(message.charAt(0) == 'p' && message.charAt(1) == 'm' && message.charAt(2) == '&'){
+                    sendMessage(message);
+                }else{
+                    sendMessage("message&" + message);
+                }
+            }
+        });
+    }
+
+    void addPressEnterHandler(){
+        textField.addActionListener(e -> {
+            String message = textField.getText();
+            if(!message.equals("")) {
+                textField.setText("");
+                System.out.println(message);
+                if(message.charAt(0) == 'p' && message.charAt(1) == 'm' && message.charAt(2) == '&'){
+                    sendMessage(message);
+                }else{
+                    sendMessage("message&" + message);
+                }
+            }
+        });
+    }
+
+    private void addCloseWindowHandler(){
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                System.out.println("Closing window");
+                if(!socket.isClosed()){
+                    if (logged){
+                        String login = loginField.getText();
+                        sendMessage("logoutFull&" + login);
+                    }else{
+                        sendMessage("exit");
+                    }
+                }
+            }
+        });
+    }
+
+    private void addScrollHandler(){
+        scrollTextArea.getVerticalScrollBar().getAccessibleContext()
+                .addPropertyChangeListener((PropertyChangeEvent e) -> {
+                    int scrollValue = scrollTextArea.getVerticalScrollBar().getValue();
+                    scrollTimeArea.getVerticalScrollBar().setValue(scrollValue);
+                });
+        scrollTimeArea.getVerticalScrollBar().getAccessibleContext()
+                .addPropertyChangeListener((PropertyChangeEvent e) -> {
+                    int scrollValue = scrollTimeArea.getVerticalScrollBar().getValue();
+                    scrollTextArea.getVerticalScrollBar().setValue(scrollValue);
+                });
     }
 
     private void drawWindow() {
@@ -249,137 +389,5 @@ class ChatClient extends JFrame {
         label.setForeground(new Color(0x444444));
 
         return label;
-    }
-
-    private void putMessage(String message,String time) {
-        timeArea.append(time);
-        textArea.append(message);
-    }
-
-    void sendMessage(String message) {
-        try {
-            outputStream.writeUTF(message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void addLogoutHandler(){
-        logoutButton.addActionListener(e->{
-            System.out.println("Logging out");
-            String login = loginField.getText();
-            sendMessage("logout&" + login);
-        });
-    }
-
-    private void handleLogin(){
-        String login = loginField.getText();
-        String password = passField.getText();
-        if(!login.equals("") && !password.equals("")){
-            System.out.println(login + " tries to log in.");
-            sendMessage("login&" + login + "&" + password);
-        }
-    }
-
-    private void addLoginHandler(){
-        loginButton.addActionListener(e-> handleLogin());
-        loginField.addActionListener(e-> handleLogin());
-        passField.addActionListener(e-> handleLogin());
-    }
-
-    void addClickButtonHandler(){
-        enterButton.addActionListener(e -> {
-            String message = textField.getText();
-            if(!message.equals("")) {
-                textField.setText("");
-                textField.requestFocus();
-                System.out.println(message);
-                if(message.charAt(0) == 'p' && message.charAt(1) == 'm' && message.charAt(2) == '&'){
-                    sendMessage(message);
-                }else{
-                    sendMessage("message&" + message);
-                }
-            }
-        });
-    }
-
-    void addPressEnterHandler(){
-        textField.addActionListener(e -> {
-            String message = textField.getText();
-            if(!message.equals("")) {
-                textField.setText("");
-                System.out.println(message);
-                if(message.charAt(0) == 'p' && message.charAt(1) == 'm' && message.charAt(2) == '&'){
-                    sendMessage(message);
-                }else{
-                    sendMessage("message&" + message);
-                }
-            }
-        });
-    }
-
-    private void addListeners(){
-        addWindowFocusListener(new WindowAdapter() {
-            public void windowGainedFocus(WindowEvent e) {
-                textField.requestFocusInWindow();
-            }
-        });
-        addPressEnterHandler();
-        addClickButtonHandler();
-        addLoginHandler();
-        addLogoutHandler();
-        addCloseWindowHandler();
-        addScrollHandler();
-    }
-
-    private void addCloseWindowHandler(){
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-            System.out.println("Closing window");
-            if(!socket.isClosed()){
-                if (logged){
-                    String login = loginField.getText();
-                    sendMessage("logoutFull&" + login);
-                }else{
-                    sendMessage("exit");
-                }
-            }
-            }
-        });
-    }
-
-    private void addScrollHandler(){
-        scrollTextArea.getVerticalScrollBar().getAccessibleContext()
-                .addPropertyChangeListener((PropertyChangeEvent e) -> {
-            int scrollValue = scrollTextArea.getVerticalScrollBar().getValue();
-            scrollTimeArea.getVerticalScrollBar().setValue(scrollValue);
-        });
-        scrollTimeArea.getVerticalScrollBar().getAccessibleContext()
-                .addPropertyChangeListener((PropertyChangeEvent e) -> {
-            int scrollValue = scrollTimeArea.getVerticalScrollBar().getValue();
-            scrollTextArea.getVerticalScrollBar().setValue(scrollValue);
-        });
-    }
-
-    private void reConnect(){
-        int attempt;
-        for(attempt = 0; attempt < 5;attempt++){
-            try {
-                textArea.append("Trying to connect...\n");
-                Thread.sleep(10000);
-                initConnection();
-                initReceiver();
-                textArea.append("Connection reestablished.\n");
-                sendMessage("reconnect");
-                if(logged) handleLogin();
-                break;
-            } catch (ConnectException e) {
-                textArea.append("Reconnection failed.\n");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        if(attempt == 5) textArea.append("Unable to connect. Try again later.\n");
     }
 }
