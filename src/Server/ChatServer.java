@@ -6,11 +6,15 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Map;
 
 class ChatServer {
     private static ClientsDB clientsDB = new ClientsDB();
     private static ClientStorage clientStorage = new ClientStorage();
     private static MessageService messageService = new MessageService(clientStorage);
+
+    private static Map<String,Responder> responderMap = initResponderMap();
 
     public static void main(String[] args) throws IOException {
 
@@ -57,6 +61,66 @@ class ChatServer {
                 }
             }
         }
+    }
+
+    private interface Responder {
+        void respond(String[] s,
+                     Client client,
+                     Socket socket,
+                     ClientService clientService) throws IOException;
+    }
+
+    private static Map<String, Responder> initResponderMap() {
+        HashMap<String,Responder> map = new HashMap<>();
+        map.put("login", (data,client,socket,clientService) -> {
+            if (clientsDB.checkAuth(data[1], data[2])) {
+                System.out.println("Client connected again: " + client + "::" + socket);
+                clientStorage.addClient(client);
+                client.getOutputStream().writeUTF("logged");
+                clientService.processMessage(data[1] + " enters chat.");
+            } else {
+                System.out.println("Attempt to login failed for " + data[1] + " " + data[2]);
+                client.getOutputStream().writeUTF("fail");
+            }
+        });
+        map.put("logout", (data,client,socket,clientService) -> {
+            System.out.println("Client disconnected:" + client + "::" + socket);
+            client.getOutputStream().writeUTF("logout");
+            clientStorage.removeClient(client);
+            clientService.processMessage(data[1] + " leaves chat.");
+        });
+        map.put("logoutFull", (data,client,socket,clientService) -> {
+            System.out.println("Client is off.");
+            clientStorage.removeClient(client);
+            try {
+                System.out.println("Socket for " + client + " is off");
+                clientService.processMessage(data[1] + " leaves chat.");
+                socket.close();
+            } catch (IOException e) {
+                System.out.println("Unable to close socket");
+                e.printStackTrace();
+            }
+        });
+        map.put("exit", (data,client,socket,clientService) -> {
+            System.out.println("Exit.");
+            try {
+                System.out.println("Socket closed.");
+                socket.close();
+            } catch (IOException e) {
+                System.out.println("Unable to close socket");
+                e.printStackTrace();
+            }
+        });
+        map.put("message", (data,client,socket,clientService) -> {
+            System.out.println("Received message");
+            clientService.processMessage(data[1]);
+        });
+        map.put("pm", (data,client,socket,clientService) -> {
+            System.out.println("Received private message");
+            clientService.processPrivateMessage(data[1],data[2]);
+        });
+
+        return map;
     }
 
     private static Client createClient(
@@ -140,54 +204,7 @@ class ChatServer {
         if (!socket.isClosed()) {
             String[] data = client.getInputStream().readUTF().split("&");
             System.out.println("listen " + data[0]);
-            switch (data[0]) {
-                case "login":
-                    if (clientsDB.checkAuth(data[1], data[2])) {
-                        System.out.println("Client connected again: " + client + "::" + socket);
-                        clientStorage.addClient(client);
-                        client.getOutputStream().writeUTF("logged");
-                        clientService.processMessage(data[1] + " enters chat.");
-                    } else {
-                        System.out.println("Attempt to login failed for " + data[1] + " " + data[2]);
-                        client.getOutputStream().writeUTF("fail");
-                    }
-                    break;
-                case "logout":
-                    System.out.println("Client disconnected:" + client + "::" + socket);
-                    client.getOutputStream().writeUTF("logout");
-                    clientStorage.removeClient(client);
-                    clientService.processMessage(data[1] + " leaves chat.");
-                    break;
-                case "logoutFull":
-                    System.out.println("Client is off.");
-                    clientStorage.removeClient(client);
-                    try {
-                        System.out.println("Socket for " + client + " is off");
-                        clientService.processMessage(data[1] + " leaves chat.");
-                        socket.close();
-                    } catch (IOException e) {
-                        System.out.println("Unable to close socket");
-                        e.printStackTrace();
-                    }
-                    break;
-                case "exit":
-                    System.out.println("Exit.");
-                    try {
-                        System.out.println("Socket closed.");
-                        socket.close();
-                    } catch (IOException e) {
-                        System.out.println("Unable to close socket");
-                        e.printStackTrace();
-                    }
-                    break;
-                case "message":
-                    System.out.println("Received message");
-                    clientService.processMessage(data[1]);
-                    break;
-                case "pm":
-                    System.out.println("Received private message");
-                    clientService.processPrivateMessage(data[1],data[2]);
-            }
+            responderMap.get(data[0]).respond(data,client,socket,clientService);
         }
     }
 }
