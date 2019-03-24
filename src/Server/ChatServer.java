@@ -75,7 +75,7 @@ class ChatServer {
         map.put("login", (data,client,socket,clientService) -> {
             if (clientsDB.checkAuth(data[1], data[2])) {
                 System.out.println("Client connected again: " + client + "::" + socket);
-                clientStorage.addClient(client);
+                clientStorage.addClient(data[1],client);
                 client.getOutputStream().writeUTF("logged");
                 clientService.processMessage(data[1] + " enters chat.");
             } else {
@@ -86,12 +86,12 @@ class ChatServer {
         map.put("logout", (data,client,socket,clientService) -> {
             System.out.println("Client disconnected:" + client + "::" + socket);
             client.getOutputStream().writeUTF("logout");
-            clientStorage.removeClient(client);
+            clientStorage.removeClient(client.getLogin());
             clientService.processMessage(data[1] + " leaves chat.");
         });
         map.put("logoutFull", (data,client,socket,clientService) -> {
             System.out.println("Client is off.");
-            clientStorage.removeClient(client);
+            clientStorage.removeClient(client.getLogin());
             try {
                 System.out.println("Socket for " + client + " is off");
                 clientService.processMessage(data[1] + " leaves chat.");
@@ -129,7 +129,7 @@ class ChatServer {
             DataOutputStream outputStream,
             Socket socket) throws IOException{
         Client client = new Client(data[1], data[2], inputStream, outputStream);
-        clientStorage.addClient(client);
+        clientStorage.addClient(data[1],client);
         outputStream.writeUTF("logged");
         ClientService clientService = new ClientService(client, messageService, clientStorage);
         clientService.processMessage(data[1] + " enters chat.");
