@@ -192,7 +192,7 @@ class ChatClient extends JFrame{
     private void handleLogin(){
         String login = loginField.getText();
         String password = passField.getText();
-        if(!login.equals("") && !password.equals("")){
+        if(!login.trim().equals("") && !password.equals("")){
             System.out.println(login + " tries to log in.");
             sendMessage("login&" + login + "&" + password);
         }

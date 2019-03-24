@@ -1,5 +1,7 @@
 package Server;
 
+import History.History;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -15,6 +17,7 @@ class ChatServer {
     private static MessageService messageService = new MessageService(clientStorage);
 
     private static Map<String,Responder> responderMap = initResponderMap();
+    private static History serverHistory = new History("ServerHistory","sh.txt");
 
     public static void main(String[] args) throws IOException {
 
@@ -33,12 +36,15 @@ class ChatServer {
                             clientsDB.addToDB(data[1], data[2]);
                             Client client = createClient(data, inputStream, outputStream, socket);
                             System.out.println("New client connected:" + client + "::" + socket);
+                            serverHistory.writeHistory("New client connected:" + client + "::" + socket);
                         } else {
                             if (clientsDB.checkAuth(data[1], data[2])) {
                                 Client client = createClient(data, inputStream, outputStream, socket);
                                 System.out.println("Old client connected:" + client + "::" + socket);
+                                serverHistory.writeHistory("Old client connected:" + client + "::" + socket);
                             } else {
                                 System.out.println("Attempt to login failed for " + data[1] + " " + data[2]);
+                                serverHistory.writeHistory("Attempt to login failed for " + data[1] + " " + data[2]);
                                 outputStream.writeUTF("fail");
                                 startLoginAfterFailureThread(socket, inputStream, outputStream);
                             }
@@ -47,7 +53,8 @@ class ChatServer {
                     case "exit":
                         System.out.println("Exit.");
                         try {
-                            System.out.println("Socket closed.");
+                            System.out.println("Socket " + socket + " closed.");
+                            serverHistory.writeHistory("Socket " + socket + " closed.");
                             socket.close();
                         } catch (IOException e) {
                             System.out.println("Unable to close socket");
@@ -55,7 +62,8 @@ class ChatServer {
                         }
                         break;
                     case "reconnect":
-                        System.out.println("Reconnection started.");
+                        System.out.println("Reconnection started at" + socket);
+                        serverHistory.writeHistory("Reconnection started at" + socket);
                         startLoginAfterFailureThread(socket, inputStream, outputStream);
                         break;
                 }
@@ -75,49 +83,61 @@ class ChatServer {
         map.put("login", (data,client,socket,clientService) -> {
             if (clientsDB.checkAuth(data[1], data[2])) {
                 System.out.println("Client connected again: " + client + "::" + socket);
+                serverHistory.writeHistory("Client connected again: " + client + "::" + socket);
                 clientStorage.addClient(data[1],client);
                 client.getOutputStream().writeUTF("logged");
                 clientService.processMessage(data[1] + " enters chat.");
+                serverHistory.writeHistory(data[1] + " enters chat.");
             } else {
                 System.out.println("Attempt to login failed for " + data[1] + " " + data[2]);
+                serverHistory.writeHistory("Attempt to login failed for " + data[1] + " " + data[2]);
                 client.getOutputStream().writeUTF("fail");
             }
         });
         map.put("logout", (data,client,socket,clientService) -> {
             System.out.println("Client disconnected:" + client + "::" + socket);
+            serverHistory.writeHistory("Client disconnected:" + client + "::" + socket);
             client.getOutputStream().writeUTF("logout");
             clientStorage.removeClient(client.getLogin());
             clientService.processMessage(data[1] + " leaves chat.");
+            serverHistory.writeHistory(data[1] + " leaves chat.");
         });
         map.put("logoutFull", (data,client,socket,clientService) -> {
-            System.out.println("Client is off.");
+            System.out.println("Client " + client + " is off.");
             clientStorage.removeClient(client.getLogin());
             try {
                 System.out.println("Socket for " + client + " is off");
+                serverHistory.writeHistory("Socket for " + client + " is off");
                 clientService.processMessage(data[1] + " leaves chat.");
+                serverHistory.writeHistory(data[1] + " leaves chat.");
                 socket.close();
             } catch (IOException e) {
-                System.out.println("Unable to close socket");
+                System.out.println("Unable to close socket " + socket);
+                serverHistory.writeHistory("Unable to close socket " + socket);
                 e.printStackTrace();
             }
         });
         map.put("exit", (data,client,socket,clientService) -> {
             System.out.println("Exit.");
             try {
-                System.out.println("Socket closed.");
+                System.out.println("Socket closed " + socket);
+                serverHistory.writeHistory("Socket closed " + socket);
                 socket.close();
             } catch (IOException e) {
-                System.out.println("Unable to close socket");
+                System.out.println("Unable to close socket" + socket);
+                serverHistory.writeHistory("Unable to close socket" + socket);
                 e.printStackTrace();
             }
         });
         map.put("message", (data,client,socket,clientService) -> {
             System.out.println("Received message");
             clientService.processMessage(data[1]);
+            serverHistory.writeHistory("Received message: " + data[1]);
         });
         map.put("pm", (data,client,socket,clientService) -> {
             System.out.println("Received private message");
             clientService.processPrivateMessage(data[1],data[2]);
+            serverHistory.writeHistory("Received private message^ " + data[1] + " " + data[2]);
         });
 
         return map;
@@ -133,6 +153,7 @@ class ChatServer {
         outputStream.writeUTF("logged");
         ClientService clientService = new ClientService(client, messageService, clientStorage);
         clientService.processMessage(data[1] + " enters chat.");
+        serverHistory.writeHistory(data[1] + " enters chat.");
         startListenThread(client,socket, clientService);
         return client;
     }
@@ -180,18 +201,22 @@ class ChatServer {
                 clientsDB.addToDB(data[1], data[2]);
                 Client client = createClient(data,inputStream,outputStream,socket);
                 System.out.println("New client connected:" + client + "::" + socket);
+                serverHistory.writeHistory("New client connected:" + client + "::" + socket);
                 return true;
             } else {
                 if (clientsDB.checkAuth(data[1], data[2])) {
                     Client client = createClient(data,inputStream,outputStream,socket);
                     System.out.println("Old client connected:" + client + "::" + socket);
+                    serverHistory.writeHistory("Old client connected:" + client + "::" + socket);
                     return true;
                 } else {
                     if(clientStorage.containsClient(data[1])){
                         System.out.println(data[1] + " is already logged in.");
+                        serverHistory.writeHistory(data[1] + " is already logged in.");
                         outputStream.writeUTF("occupied");
                     }else {
                         System.out.println("Attempt to login failed for " + data[1]);
+                        serverHistory.writeHistory("Attempt to login failed for " + data[1]);
                         outputStream.writeUTF("fail");
                     }
                 }
