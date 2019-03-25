@@ -1,5 +1,7 @@
 package History;
 
+import Message.Message;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -40,14 +42,44 @@ public class History {
         }
     }
 
+    public String[] getHistorySplit(){
+        StringBuilder history = new StringBuilder();
+        try {
+            Files.lines(Paths.get(file.getPath()), StandardCharsets.UTF_8).forEach(history::append);
+        } catch (IOException e) {
+            System.out.println("Error while reading history from " + file.getPath());
+            e.printStackTrace();
+        }
+        String[] historyItems = history.toString().split("&");
+        StringBuilder historyMessage = new StringBuilder();
+        StringBuilder historyTime = new StringBuilder();
+        int rows = 1;
+        boolean index = true;
+        for(String item : historyItems){
+            Message message = new Message(item);
+            if(index) {
+                historyMessage.append(message.splitMessage());
+                rows = message.getRowsCount();
+            } else {
+                historyTime.append(message.getTime(item, rows));
+            }
+            index = !index;
+        }
+        String[] historyOut = new String[2];
+        historyOut[0] = historyMessage.toString();
+        historyOut[1] = historyTime.toString();
+
+        return historyOut;
+    }
+
     public String getHistory(){
         StringBuilder history = new StringBuilder();
         try {
-            Files.lines(Paths.get(file.getName()), StandardCharsets.UTF_8).forEach(history::append);
+            Files.lines(Paths.get(file.getPath()), StandardCharsets.UTF_8).forEach(history::append);
         } catch (IOException e) {
             System.out.println("Error while reading history from " + file.getPath());
+            e.printStackTrace();
         }
-
         return history.toString();
     }
 }

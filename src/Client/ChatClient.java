@@ -1,5 +1,7 @@
 package Client;
 
+import History.History;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -36,8 +38,11 @@ class ChatClient extends JFrame{
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
     private boolean logged = false;
+    private boolean showHistoryAtLogin = true;
 
     private Map<String,Responder> responderMap = initResponderMap();
+    private static History clientHistory;
+
 
     ChatClient(){
         drawWindow();
@@ -117,6 +122,13 @@ class ChatClient extends JFrame{
         });
         map.put("logged", s -> {
             addLoggedElements(loginField.getText());
+            if(showHistoryAtLogin){
+                clientHistory = new History(loginField.getText() + "History","sh.txt");
+                String[] oldHistory = clientHistory.getHistorySplit();
+                textArea.append(oldHistory[0]);
+                timeArea.append(oldHistory[1]);
+                showHistoryAtLogin = false;
+            }
             System.out.println("Logged in.");
             textField.requestFocus();
             logged = true;
@@ -130,6 +142,7 @@ class ChatClient extends JFrame{
             System.out.println("Received " + s[1] + " at " + s[2]);
             textArea.append(s[1]);
             timeArea.append(s[2]);
+            clientHistory.writeHistory(s[1] + "&" + s[2] + "&");
         });
         return map;
     }
@@ -192,7 +205,7 @@ class ChatClient extends JFrame{
     private void handleLogin(){
         String login = loginField.getText();
         String password = passField.getText();
-        if(!login.trim().equals("") && !password.equals("")){
+        if(!login.trim().isEmpty() && !password.isEmpty()){
             System.out.println(login + " tries to log in.");
             sendMessage("login&" + login + "&" + password);
         }
