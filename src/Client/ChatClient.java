@@ -112,9 +112,12 @@ class ChatClient extends JFrame{
 
     private Map<String, Responder> initResponderMap() {
         HashMap<String,Responder> map = new HashMap<>();
-        map.put("fail", s -> {
-            System.out.println("failed to login");
-            addLogFailureLabel("Login is already occupied and has another password.");
+        map.put("fail", new Responder() {
+            @Override
+            public void respond(String[] s) {
+                System.out.println("failed to login");
+                ChatClient.this.addLogFailureLabel("Login is already occupied and has another password.");
+            }
         });
         map.put("occupied", s -> {
             System.out.println(loginField.getText() + " is already logged in.");

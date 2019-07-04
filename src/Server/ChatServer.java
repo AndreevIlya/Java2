@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 class ChatServer {
     private static ClientsDB clientsDB = new ClientsDB();
@@ -21,6 +22,7 @@ class ChatServer {
 
     public static void main(String[] args) throws IOException {
 
+        listenExit();
         try (ServerSocket serverSocket = new ServerSocket(4444)) {
             System.out.println("server started");
             while (true) {
@@ -32,8 +34,7 @@ class ChatServer {
                 System.out.println("New " + data[0]);
                 switch (data[0]) {
                     case "login":
-                        if (clientsDB.isClientNotInDB(data[1])) {
-                            clientsDB.addToDB(data[1], data[2]);
+                        if (clientsDB.addToDB(data[1], data[2])) {
                             Client client = createClient(data, inputStream, outputStream, socket);
                             System.out.println("New client connected:" + client + "::" + socket);
                             serverHistory.writeHistory("New client connected:" + client + "::" + socket);
@@ -197,8 +198,7 @@ class ChatServer {
         String[] data = inputStream.readUTF().split("&");
         System.out.println("After failure " + data[0]);
         if (data[0].equals("login")) {
-            if (clientsDB.isClientNotInDB(data[1])) {
-                clientsDB.addToDB(data[1], data[2]);
+            if (clientsDB.addToDB(data[1], data[2])) {
                 Client client = createClient(data,inputStream,outputStream,socket);
                 System.out.println("New client connected:" + client + "::" + socket);
                 serverHistory.writeHistory("New client connected:" + client + "::" + socket);
@@ -231,5 +231,18 @@ class ChatServer {
             System.out.println("listen " + data[0]);
             responderMap.get(data[0]).respond(data,client,socket,clientService);
         }
+    }
+
+    private static void listenExit(){
+        Scanner scanner = new Scanner(System.in);
+        new Thread(() -> {
+            while (true){
+               if(scanner.next().equals("exit")) {
+                   System.out.println("Shutting down server.");
+                   clientsDB.close();
+                   System.exit(0);
+               }
+           }
+        }).start();
     }
 }

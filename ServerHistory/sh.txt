@@ -84,3 +84,57 @@ Client connected again: Client{login='asd'}::Socket[addr=/192.168.1.103,port=554
 qwe enters chat.
 Socket for Client{login='asd'} is off
 qwe leaves chat.
+asd enters chat.
+Old client connected:Client{login='asd'}::Socket[addr=/192.168.1.103,port=61562,localport=4444]
+Received message: hs
+Received message: tr
+Received message: g
+Received message: dh
+Received message: h
+Received message: df
+Received message: hj
+Received message: fgd
+Received message: j
+Received message: fdj
+Received message: gdj
+Received message: ygjdf
+Received message: dy
+Received message: cgj
+Received message: y
+Received message: gdf
+Received message: j
+Client disconnected:Client{login='asd'}::Socket[addr=/192.168.1.103,port=61562,localport=4444]
+asd leaves chat.
+Socket closed Socket[addr=/192.168.1.103,port=61562,localport=4444]
+asd enters chat.
+Old client connected:Client{login='asd'}::Socket[addr=/192.168.1.103,port=61702,localport=4444]
+Received message: dgasregeh
+Received message: fkjtrfk
+Received message: gkgyulkugyl
+Received message: mngycmtkmy
+Attempt to login failed for asd 123
+Attempt to login failed for asd 123
+Attempt to login failed for asd 123
+asd enters chat.
+New client connected:Client{login='asd'}::Socket[addr=/192.168.1.103,port=54008,localport=4444]
+qwe enters chat.
+New client connected:Client{login='qwe'}::Socket[addr=/192.168.1.103,port=54280,localport=4444]
+Client disconnected:Client{login='asd'}::Socket[addr=/192.168.1.103,port=54008,localport=4444]
+asd leaves chat.
+Client connected again: Client{login='asd'}::Socket[addr=/192.168.1.103,port=54008,localport=4444]
+asd enters chat.
+Client disconnected:Client{login='qwe'}::Socket[addr=/192.168.1.103,port=54280,localport=4444]
+qwe leaves chat.
+Socket closed Socket[addr=/192.168.1.103,port=54280,localport=4444]
+Client disconnected:Client{login='asd'}::Socket[addr=/192.168.1.103,port=54008,localport=4444]
+asd leaves chat.
+Socket closed Socket[addr=/192.168.1.103,port=54008,localport=4444]
+asd enters chat.
+New client connected:Client{login='asd'}::Socket[addr=/192.168.1.103,port=59861,localport=4444]
+Client disconnected:Client{login='asd'}::Socket[addr=/192.168.1.103,port=59861,localport=4444]
+asd leaves chat.
+Client connected again: Client{login='asd'}::Socket[addr=/192.168.1.103,port=59861,localport=4444]
+asd enters chat.
+Client disconnected:Client{login='asd'}::Socket[addr=/192.168.1.103,port=59861,localport=4444]
+asd leaves chat.
+Socket closed Socket[addr=/192.168.1.103,port=59861,localport=4444]
