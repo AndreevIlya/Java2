@@ -2,10 +2,11 @@ package Message;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class Message {
-    private String message;
-    private final int width = 45;
+    private final String message;
+    private static final int WIDTH = 45;
     private int rowsCount = 1;
 
     public Message(String message){
@@ -16,11 +17,11 @@ public class Message {
         StringBuilder splitMessage = new StringBuilder();
         int lineLength = message.length();
         int wordsLength = 0;
-        if(lineLength >= width){
+        if(lineLength >= WIDTH){
             String[] words = message.split(" ");
             for(String word : words){
                 wordsLength += word.length() + 1;
-                if(wordsLength > width){
+                if(wordsLength > WIDTH){
                     splitMessage.append("\n").append(word).append(" ");
                     wordsLength = word.length() + 1;
                     rowsCount++;
@@ -35,15 +36,20 @@ public class Message {
         }
     }
 
-    public String getTime(){
-        StringBuilder time = new StringBuilder(new SimpleDateFormat("HH:mm:ss dd.MM.yyyy").format(Calendar.getInstance().getTime()));
+    private String getTime(){
+        Date time = Calendar.getInstance().getTime();
+        return new SimpleDateFormat("HH:mm:ss dd.MM.yyyy").format(time);
+    }
+
+    public String formatTime(){
+        StringBuilder time = new StringBuilder(getTime());
         for(int i = 0; i < rowsCount; i++){
             time.append("\n");
         }
         return time.toString();
     }
 
-    public String getTime(String timeStr, int rows){
+    public String formatTime(String timeStr, int rows){
         StringBuilder time = new StringBuilder(timeStr);
         for(int i = 0; i < rows; i++){
             time.append("\n");

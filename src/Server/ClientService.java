@@ -19,7 +19,7 @@ class ClientService {
         Message processedMessage = new Message(message);
         message = "message&" + client.getLogin() + ": " +
                 processedMessage.splitMessage() + "&" +
-                processedMessage.getTime();
+                processedMessage.formatTime();
 
         messageService.sendMessages(message);
     }
@@ -33,7 +33,7 @@ class ClientService {
                 Message messageToSend = new Message(message);
                 message = "message&" + client.getLogin() + " to " + login + ": " +
                         messageToSend.splitMessage() + "&" +
-                        messageToSend.getTime();
+                        messageToSend.formatTime();
                 messageService.sendPrivateMessage(login, message);
                 messageService.sendPrivateMessage(client.getLogin(), message);
             }

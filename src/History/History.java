@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class History {
-    private File file;
+    private final File file;
 
     public History(String directory,String name){
         File dir = new File(directory);
@@ -61,7 +61,7 @@ public class History {
                 historyMessage.append(message.splitMessage());
                 rows = message.getRowsCount();
             } else {
-                historyTime.append(message.getTime(item, rows));
+                historyTime.append(message.formatTime(item, rows));
             }
             index = !index;
         }

@@ -3,7 +3,7 @@ package Server;
 import java.util.*;
 
 class ClientStorage {
-    private static Map<String, Client> clientMap = new HashMap<>();
+    private static final Map<String, Client> clientMap = new HashMap<>();
 
     synchronized void addClient(String login,Client client) {
         System.out.println("client added: " + login);

@@ -17,22 +17,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 class ChatClient extends JFrame{
-    JButton enterButton = createSendButton("Enter");
-    private JButton loginButton = createSendButton("Log in");
-    private JButton logoutButton = createSendButton("Log out");
-    JTextField textField = createTextField();
-    private JTextField loginField = createTextField();
-    private JTextField passField = createTextField();
-    JTextArea textArea = createTextArea();
-    private JTextArea timeArea = createTextArea();
-    private JPanel pane = createPane();
-    private JPanel innerPane = createColumnPane(2);
-    private JPanel loginPane = createColumnPane(3);
-    private JPanel loggedPane = createPane();
-    private JLabel loggingFailureLabel = createLabel();
-    private JLabel loggingSuccessLabel = createLabel();
-    private JScrollPane scrollTextArea = new JScrollPane(textArea);
-    private JScrollPane scrollTimeArea = new JScrollPane(timeArea);
+    final JButton enterButton = createSendButton("Enter");
+    private final JButton loginButton = createSendButton("Log in");
+    private final JButton logoutButton = createSendButton("Log out");
+    final JTextField textField = createTextField();
+    private final JTextField loginField = createTextField();
+    private final JTextField passField = createTextField();
+    final JTextArea textArea = createTextArea();
+    private final JTextArea timeArea = createTextArea();
+    private final JPanel pane = createPane();
+    private final JPanel innerPane = createColumnPane(2);
+    private final JPanel loginPane = createColumnPane(3);
+    private final JPanel loggedPane = createPane();
+    private final JLabel loggingFailureLabel = createLabel();
+    private final JLabel loggingSuccessLabel = createLabel();
+    private final JScrollPane scrollTextArea = new JScrollPane(textArea);
+    private final JScrollPane scrollTimeArea = new JScrollPane(timeArea);
 
     private Socket socket;
     private DataOutputStream outputStream;
@@ -40,7 +40,7 @@ class ChatClient extends JFrame{
     private boolean logged = false;
     private boolean showHistoryAtLogin = true;
 
-    private Map<String,Responder> responderMap = initResponderMap();
+    private final Map<String,Responder> responderMap = initResponderMap();
     private static History clientHistory;
 
 
@@ -112,12 +112,9 @@ class ChatClient extends JFrame{
 
     private Map<String, Responder> initResponderMap() {
         HashMap<String,Responder> map = new HashMap<>();
-        map.put("fail", new Responder() {
-            @Override
-            public void respond(String[] s) {
-                System.out.println("failed to login");
-                ChatClient.this.addLogFailureLabel("Login is already occupied and has another password.");
-            }
+        map.put("fail", s -> {
+            System.out.println("failed to login");
+            ChatClient.this.addLogFailureLabel("Login is already occupied and has another password.");
         });
         map.put("occupied", s -> {
             System.out.println(loginField.getText() + " is already logged in.");

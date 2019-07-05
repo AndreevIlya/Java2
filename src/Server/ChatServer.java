@@ -13,17 +13,19 @@ import java.util.Map;
 import java.util.Scanner;
 
 class ChatServer {
-    private static ClientsDB clientsDB = new ClientsDB();
-    private static ClientStorage clientStorage = new ClientStorage();
-    private static MessageService messageService = new MessageService(clientStorage);
+    private static final ClientsDB clientsDB = new ClientsDB();
+    private static final ClientStorage clientStorage = new ClientStorage();
+    private static final MessageService messageService = new MessageService(clientStorage);
+    private static final int PORT = 4444;
 
-    private static Map<String,Responder> responderMap = initResponderMap();
-    private static History serverHistory = new History("ServerHistory","sh.txt");
+    private static final Map<String,Responder> responderMap = initResponderMap();
+    private static final History serverHistory = new History("ServerHistory","sh.txt");
 
+    @SuppressWarnings("InfiniteLoopStatement")
     public static void main(String[] args) throws IOException {
 
         listenExit();
-        try (ServerSocket serverSocket = new ServerSocket(4444)) {
+        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("server started");
             while (true) {
                 Socket socket = serverSocket.accept();

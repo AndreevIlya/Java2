@@ -2,7 +2,7 @@ package Client;
 
 import static java.lang.Integer.parseInt;
 
-public class SpamClient extends ChatClient {
+class SpamClient extends ChatClient {
     public static void main(String[] args) {
         new SpamClient();
     }

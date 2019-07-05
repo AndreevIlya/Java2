@@ -2,7 +2,6 @@ package Server;
 
 import java.io.*;
 import java.sql.*;
-import java.util.HashMap;
 
 class ClientsDB implements Closeable{
     private static final String JDBC_DRIVER = "org.postgresql.Driver";
