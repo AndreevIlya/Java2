@@ -1,42 +1,30 @@
 package Server;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 class ClientStorage {
-    private static List<Client> clients = Collections.synchronizedList(new ArrayList<>());
+    private static Map<String, Client> clientMap = new HashMap<>();
 
-    void addClient(Client client) {
-        System.out.println("client added: "+client);
-        clients.add(client);
+    synchronized void addClient(String login,Client client) {
+        System.out.println("client added: " + login);
+        clientMap.put(login,client);
     }
 
-    void removeClient(Client client) {
-        System.out.println("client removed: " + client);
-        clients.remove(client);
+    synchronized void removeClient(String login) {
+        System.out.println("client removed: " + login);
+        clientMap.remove(login);
     }
 
-    Client findClient(String login){
-        for (Client client : clients){
-            if (client.getLogin().equals(login)){
-                return client;
-            }
-        }
-        return null;
+    synchronized Client findClient(String login){
+        return clientMap.get(login);
     }
 
-    boolean containsClient(String login){
-        for (Client client : clients){
-            if (client.getLogin().equals(login)){
-                return true;
-            }
-        }
-        return false;
+    synchronized boolean containsClient(String login){
+        return clientMap.containsKey(login);
     }
 
-    List<Client> getClients() {
-        return clients;
+    synchronized Map<String, Client> getClients() {
+        return clientMap;
     }
 
 

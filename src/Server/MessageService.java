@@ -1,6 +1,7 @@
 package Server;
 
 import java.io.IOException;
+import java.util.Map;
 
 class MessageService {
     private final ClientStorage clientStorage;
@@ -10,14 +11,15 @@ class MessageService {
     }
 
     synchronized void sendMessages(String message) {
-        clientStorage.getClients().forEach(client -> {
+        for(Map.Entry<String,Client> clientEntry : clientStorage.getClients().entrySet()){
             try {
-                System.out.println(String.format("sending message '%s' to '%s'", message, client));
-                client.getOutputStream().writeUTF(message);
+                System.out.println(String.format("sending message '%s' to '%s'", message,
+                        clientEntry.getKey()));
+                clientEntry.getValue().getOutputStream().writeUTF(message);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        });
+        }
     }
 
     synchronized void sendPrivateMessage(String login,String message) {
