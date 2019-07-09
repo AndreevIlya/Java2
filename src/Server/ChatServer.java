@@ -1,6 +1,7 @@
 package Server;
 
 import History.History;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -19,7 +20,7 @@ class ChatServer {
     private static final int PORT = 4444;
 
     private static final Map<String,Responder> responderMap = initResponderMap();
-    private static final History serverHistory = new History("ServerHistory","sh.txt");
+    private static final History serverHistory = new History(null, "ServerHistory", "sh.txt");
 
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(String[] args) throws IOException {
@@ -82,12 +83,19 @@ class ChatServer {
     }
 
     private static Map<String, Responder> initResponderMap() {
-        HashMap<String,Responder> map = new HashMap<>();
+        Map<String, Responder> map = new HashMap<>();
         map.put("login", (data,client,socket,clientService) -> {
             if (clientsDB.checkAuth(data[1], data[2])) {
-                System.out.println("Client connected again: " + client + "::" + socket);
-                serverHistory.writeHistory("Client connected again: " + client + "::" + socket);
-                clientStorage.addClient(data[1],client);
+                if (data[1].equals(client.getLogin())) {
+                    System.out.println("Client connected again: " + client + "::" + socket);
+                    serverHistory.writeHistory("Client connected again: " + client + "::" + socket);
+                } else {
+                    System.out.println("Client " + data[1] + " connected instead of: " + client + "::" + socket);
+                    serverHistory.writeHistory("Client " + data[1] + " connected instead of: " + client + "::" + socket);
+                    client.setLogin(data[1]);
+                    client.setPassword(data[2]);
+                }
+                clientStorage.addClient(data[1], client);
                 client.getOutputStream().writeUTF("logged");
                 clientService.processMessage(data[1] + " enters chat.");
                 serverHistory.writeHistory(data[1] + " enters chat.");
@@ -134,11 +142,13 @@ class ChatServer {
         });
         map.put("message", (data,client,socket,clientService) -> {
             System.out.println("Received message");
+            data[1] = moderateLine(data[1]);
             clientService.processMessage(data[1]);
             serverHistory.writeHistory("Received message: " + data[1]);
         });
         map.put("pm", (data,client,socket,clientService) -> {
             System.out.println("Received private message");
+            data[2] = moderateLine(data[2]);
             clientService.processPrivateMessage(data[1],data[2]);
             serverHistory.writeHistory("Received private message^ " + data[1] + " " + data[2]);
         });
@@ -147,7 +157,7 @@ class ChatServer {
     }
 
     private static Client createClient(
-            String[] data,
+            @NotNull String[] data,
             DataInputStream inputStream,
             DataOutputStream outputStream,
             Socket socket) throws IOException{
@@ -196,7 +206,7 @@ class ChatServer {
         loginAfter.start();
     }
 
-    private static boolean loginAfterFailure(Socket socket,DataInputStream inputStream,DataOutputStream outputStream) throws IOException{
+    private static boolean loginAfterFailure(Socket socket, @NotNull DataInputStream inputStream, DataOutputStream outputStream) throws IOException {
         String[] data = inputStream.readUTF().split("&");
         System.out.println("After failure " + data[0]);
         if (data[0].equals("login")) {
@@ -227,7 +237,7 @@ class ChatServer {
         return false;
     }
 
-    private static void listenToInputStream (Client client, Socket socket, ClientService clientService) throws IOException {
+    private static void listenToInputStream(Client client, @NotNull Socket socket, ClientService clientService) throws IOException {
         if (!socket.isClosed()) {
             String[] data = client.getInputStream().readUTF().split("&");
             System.out.println("listen " + data[0]);
@@ -237,7 +247,7 @@ class ChatServer {
 
     private static void listenExit(){
         Scanner scanner = new Scanner(System.in);
-        new Thread(() -> {
+        Thread exitThread = new Thread(() -> {
             while (true){
                if(scanner.next().equals("exit")) {
                    System.out.println("Shutting down server.");
@@ -245,6 +255,18 @@ class ChatServer {
                    System.exit(0);
                }
            }
-        }).start();
+        });
+        exitThread.setDaemon(true);
+        exitThread.start();
+    }
+
+    private static String moderateLine(String str) {
+        for (ForbiddenWords fw : ForbiddenWords.values()) {
+            if (str.contains(fw.toString())) {
+                System.out.println("Message contains forbidden word " + fw.toString() + ".");
+                return "Message is deleted by moderator.";
+            }
+        }
+        return str;
     }
 }

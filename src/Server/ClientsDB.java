@@ -1,11 +1,11 @@
 package Server;
 
-import java.io.*;
+import java.io.Closeable;
 import java.sql.*;
 
 class ClientsDB implements Closeable{
     private static final String JDBC_DRIVER = "org.postgresql.Driver";
-    private static final String DATABASE = "jdbc:postgresql://127.0.0.1:5432/javachat?user=postgres&password=mypass";
+    private static final String DATABASE = "jdbc:postgresql://127.0.0.1:5432/javachat?user=postgres&password=c8cbdcdf";
     private Connection connection;
 
     ClientsDB(){
@@ -48,7 +48,7 @@ class ClientsDB implements Closeable{
                 addStatement.setString(1, login);
                 addStatement.setString(2, Integer.toString(pass.hashCode()));
                 addStatement.executeUpdate();
-                System.out.println(login + " is added to DB.");
+                System.out.println(login + " is now added to DB.");
                 return true;
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -62,7 +62,7 @@ class ClientsDB implements Closeable{
                 }
             }
         } else {
-            System.out.println(login + " is not added to DB.");
+            System.out.println(login + " have already been added to DB.");
             return false;
         }
     }

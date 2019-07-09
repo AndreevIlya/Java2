@@ -4,7 +4,8 @@ import History.History;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -111,7 +112,7 @@ class ChatClient extends JFrame{
     }
 
     private Map<String, Responder> initResponderMap() {
-        HashMap<String,Responder> map = new HashMap<>();
+        Map<String, Responder> map = new HashMap<>();
         map.put("fail", s -> {
             System.out.println("failed to login");
             ChatClient.this.addLogFailureLabel("Login is already occupied and has another password.");
@@ -123,10 +124,12 @@ class ChatClient extends JFrame{
         map.put("logged", s -> {
             addLoggedElements(loginField.getText());
             if(showHistoryAtLogin){
-                clientHistory = new History(loginField.getText() + "History","sh.txt");
-                String[] oldHistory = clientHistory.getHistorySplit();
-                textArea.append(oldHistory[0]);
-                timeArea.append(oldHistory[1]);
+                clientHistory = new History("History", "history_" + loginField.getText(), "history.txt");
+                String[] oldHistory = clientHistory.splitHistory();
+                if (oldHistory != null) {
+                    textArea.append(oldHistory[0]);
+                    timeArea.append(oldHistory[1]);
+                }
                 showHistoryAtLogin = false;
             }
             System.out.println("Logged in.");
@@ -142,7 +145,7 @@ class ChatClient extends JFrame{
             System.out.println("Received " + s[1] + " at " + s[2]);
             textArea.append(s[1]);
             timeArea.append(s[2]);
-            clientHistory.writeHistory(s[1] + "&" + s[2] + "&");
+            clientHistory.writeHistory(s[1] + s[2]);
         });
         return map;
     }

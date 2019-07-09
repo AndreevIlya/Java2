@@ -2,16 +2,25 @@ package History;
 
 import Message.Message;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class History {
     private final File file;
+    private static final int LAST_ROWS_COUNT = 10;
 
-    public History(String directory,String name){
-        File dir = new File(directory);
+    public History(String rootDir, String directory, String name) {
+        File dir;
+        if (rootDir == null) {
+            dir = new File(directory);
+        } else {
+            dir = new File(rootDir, directory);
+        }
         if(!dir.exists()){
             if(dir.mkdir()){
                 System.out.println("History directory created at " + dir);
@@ -35,6 +44,7 @@ public class History {
         try{
             FileWriter writer = new FileWriter(file, true);
             BufferedWriter bufferWriter = new BufferedWriter(writer);
+            System.out.println("Writing history: " + note + "\n");
             bufferWriter.write(note + "\n");
             bufferWriter.close();
         }catch (IOException e){
@@ -42,44 +52,40 @@ public class History {
         }
     }
 
-    public String[] getHistorySplit(){
-        StringBuilder history = new StringBuilder();
+    public String[] splitHistory() {
         try {
-            Files.lines(Paths.get(file.getPath()), StandardCharsets.UTF_8).forEach(history::append);
+            List<String> historyItems = getHistory();
+            StringBuilder historyMessage = new StringBuilder();
+            StringBuilder historyTime = new StringBuilder();
+            int rows = 1;
+            int index = 0;
+            for (String item : historyItems) {
+                Message message = new Message(item);
+                if (index % 3 == 0) {
+                    historyMessage.append(message.splitMessage());
+                    rows = message.getRowsCount();
+                } else if (index % 3 == 1) {
+                    historyTime.append(message.formatTime(item, rows));
+                }
+                index++;
+            }
+            String[] historyOut = new String[2];
+            historyOut[0] = historyMessage.toString();
+            historyOut[1] = historyTime.toString();
+            return historyOut;
         } catch (IOException e) {
             System.out.println("Error while reading history from " + file.getPath());
             e.printStackTrace();
         }
-        String[] historyItems = history.toString().split("&");
-        StringBuilder historyMessage = new StringBuilder();
-        StringBuilder historyTime = new StringBuilder();
-        int rows = 1;
-        boolean index = true;
-        for(String item : historyItems){
-            Message message = new Message(item);
-            if(index) {
-                historyMessage.append(message.splitMessage());
-                rows = message.getRowsCount();
-            } else {
-                historyTime.append(message.formatTime(item, rows));
-            }
-            index = !index;
-        }
-        String[] historyOut = new String[2];
-        historyOut[0] = historyMessage.toString();
-        historyOut[1] = historyTime.toString();
-
-        return historyOut;
+        return null;
     }
 
-    public String getHistory(){
-        StringBuilder history = new StringBuilder();
-        try {
-            Files.lines(Paths.get(file.getPath()), StandardCharsets.UTF_8).forEach(history::append);
-        } catch (IOException e) {
-            System.out.println("Error while reading history from " + file.getPath());
-            e.printStackTrace();
+    private List<String> getHistory() throws IOException {
+        List<String> historyLines = Files.readAllLines(Paths.get(file.getPath()));
+        int count = historyLines.size();
+        if (count > LAST_ROWS_COUNT * 3) {
+            return historyLines.subList(count - LAST_ROWS_COUNT * 3, count);
         }
-        return history.toString();
+        return historyLines;
     }
 }
