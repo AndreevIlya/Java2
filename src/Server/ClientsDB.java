@@ -1,11 +1,11 @@
 package Server;
 
-import java.io.*;
+import java.io.Closeable;
 import java.sql.*;
 
 class ClientsDB implements Closeable{
     private static final String JDBC_DRIVER = "org.postgresql.Driver";
-    private static final String DATABASE = "jdbc:postgresql://127.0.0.1:5432/javachat?user=postgres&password=mypass";
+    private static final String DATABASE = "jdbc:postgresql://127.0.0.1:5432/javachat?user=postgres&password=c8cbdcdf";
     private Connection connection;
 
     ClientsDB(){

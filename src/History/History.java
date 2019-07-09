@@ -1,17 +1,27 @@
 package History;
 
 import Message.Message;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class History {
     private final File file;
+    private static final int LAST_ROWS_COUNT = 10;
 
-    public History(String directory,String name){
-        File dir = new File(directory);
+    public History(String rootDir, String directory, String name) {
+        File dir;
+        if (rootDir == null) {
+            dir = new File(directory);
+        } else {
+            dir = new File(rootDir, directory);
+        }
         if(!dir.exists()){
             if(dir.mkdir()){
                 System.out.println("History directory created at " + dir);
@@ -35,6 +45,7 @@ public class History {
         try{
             FileWriter writer = new FileWriter(file, true);
             BufferedWriter bufferWriter = new BufferedWriter(writer);
+            System.out.println("Writing history: " + note + "\n");
             bufferWriter.write(note + "\n");
             bufferWriter.close();
         }catch (IOException e){
@@ -42,15 +53,8 @@ public class History {
         }
     }
 
-    public String[] getHistorySplit(){
-        StringBuilder history = new StringBuilder();
-        try {
-            Files.lines(Paths.get(file.getPath()), StandardCharsets.UTF_8).forEach(history::append);
-        } catch (IOException e) {
-            System.out.println("Error while reading history from " + file.getPath());
-            e.printStackTrace();
-        }
-        String[] historyItems = history.toString().split("&");
+    public String[] splitHistory() {
+        String[] historyItems = getHistory().split("&");
         StringBuilder historyMessage = new StringBuilder();
         StringBuilder historyTime = new StringBuilder();
         int rows = 1;
@@ -72,10 +76,25 @@ public class History {
         return historyOut;
     }
 
-    public String getHistory(){
+    @NotNull
+    private String getHistory() {
         StringBuilder history = new StringBuilder();
         try {
-            Files.lines(Paths.get(file.getPath()), StandardCharsets.UTF_8).forEach(history::append);
+            String[] historyLines = Files.lines(Paths.get(file.getPath()), StandardCharsets.UTF_8).toArray(String[]::new);
+            int count = historyLines.length;
+            System.out.println("count" + count);
+            int i = 1;
+            if (count >= LAST_ROWS_COUNT) {
+                for (int j = count - LAST_ROWS_COUNT; j < historyLines.length; j++) {
+                    System.out.println("line " + (i++) + historyLines[j]);
+                    history.append(historyLines[j]);
+                }
+            } else {
+                for (String historyLine : historyLines) {
+                    System.out.println("line " + (i++) + historyLine);
+                    history.append(historyLine);
+                }
+            }
         } catch (IOException e) {
             System.out.println("Error while reading history from " + file.getPath());
             e.printStackTrace();
