@@ -83,12 +83,19 @@ class ChatServer {
     }
 
     private static Map<String, Responder> initResponderMap() {
-        HashMap<String,Responder> map = new HashMap<>();
+        Map<String, Responder> map = new HashMap<>();
         map.put("login", (data,client,socket,clientService) -> {
             if (clientsDB.checkAuth(data[1], data[2])) {
-                System.out.println("Client connected again: " + client + "::" + socket);
-                serverHistory.writeHistory("Client connected again: " + client + "::" + socket);
-                clientStorage.addClient(data[1],client);
+                if (data[1].equals(client.getLogin())) {
+                    System.out.println("Client connected again: " + client + "::" + socket);
+                    serverHistory.writeHistory("Client connected again: " + client + "::" + socket);
+                } else {
+                    System.out.println("Client " + data[1] + " connected instead of: " + client + "::" + socket);
+                    serverHistory.writeHistory("Client " + data[1] + " connected instead of: " + client + "::" + socket);
+                    client.setLogin(data[1]);
+                    client.setPassword(data[2]);
+                }
+                clientStorage.addClient(data[1], client);
                 client.getOutputStream().writeUTF("logged");
                 clientService.processMessage(data[1] + " enters chat.");
                 serverHistory.writeHistory(data[1] + " enters chat.");
@@ -240,7 +247,7 @@ class ChatServer {
 
     private static void listenExit(){
         Scanner scanner = new Scanner(System.in);
-        new Thread(() -> {
+        Thread exitThread = new Thread(() -> {
             while (true){
                if(scanner.next().equals("exit")) {
                    System.out.println("Shutting down server.");
@@ -248,7 +255,9 @@ class ChatServer {
                    System.exit(0);
                }
            }
-        }).start();
+        });
+        exitThread.setDaemon(true);
+        exitThread.start();
     }
 
     private static String moderateLine(String str) {

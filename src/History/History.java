@@ -83,7 +83,6 @@ public class History {
     private List<String> getHistory() throws IOException {
         List<String> historyLines = Files.readAllLines(Paths.get(file.getPath()));
         int count = historyLines.size();
-        System.out.println("count" + count);
         if (count > LAST_ROWS_COUNT * 3) {
             return historyLines.subList(count - LAST_ROWS_COUNT * 3, count);
         }

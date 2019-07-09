@@ -48,7 +48,7 @@ class ClientsDB implements Closeable{
                 addStatement.setString(1, login);
                 addStatement.setString(2, Integer.toString(pass.hashCode()));
                 addStatement.executeUpdate();
-                System.out.println(login + " is added to DB.");
+                System.out.println(login + " is now added to DB.");
                 return true;
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -62,7 +62,7 @@ class ClientsDB implements Closeable{
                 }
             }
         } else {
-            System.out.println(login + " is not added to DB.");
+            System.out.println(login + " have already been added to DB.");
             return false;
         }
     }

@@ -4,8 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 class Client {
-    private final String login;
-    private final int passwordHash;
+    private String login;
+    private int passwordHash;
     private final DataInputStream is;
     private final DataOutputStream os;
 
@@ -15,6 +15,14 @@ class Client {
         this.passwordHash = password.hashCode();
         this.is = is;
         this.os = os;
+    }
+
+    void setLogin(String login) {
+        this.login = login;
+    }
+
+    void setPassword(String password) {
+        this.passwordHash = password.hashCode();
     }
 
     String getLogin() {
