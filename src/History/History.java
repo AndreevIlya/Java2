@@ -1,15 +1,14 @@
 package History;
 
 import Message.Message;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class History {
     private final File file;
@@ -54,51 +53,40 @@ public class History {
     }
 
     public String[] splitHistory() {
-        String[] historyItems = getHistory().split("&");
-        StringBuilder historyMessage = new StringBuilder();
-        StringBuilder historyTime = new StringBuilder();
-        int rows = 1;
-        boolean index = true;
-        for(String item : historyItems){
-            Message message = new Message(item);
-            if(index) {
-                historyMessage.append(message.splitMessage());
-                rows = message.getRowsCount();
-            } else {
-                historyTime.append(message.formatTime(item, rows));
-            }
-            index = !index;
-        }
-        String[] historyOut = new String[2];
-        historyOut[0] = historyMessage.toString();
-        historyOut[1] = historyTime.toString();
-
-        return historyOut;
-    }
-
-    @NotNull
-    private String getHistory() {
-        StringBuilder history = new StringBuilder();
         try {
-            String[] historyLines = Files.lines(Paths.get(file.getPath()), StandardCharsets.UTF_8).toArray(String[]::new);
-            int count = historyLines.length;
-            System.out.println("count" + count);
-            int i = 1;
-            if (count >= LAST_ROWS_COUNT) {
-                for (int j = count - LAST_ROWS_COUNT; j < historyLines.length; j++) {
-                    System.out.println("line " + (i++) + historyLines[j]);
-                    history.append(historyLines[j]);
+            List<String> historyItems = getHistory();
+            StringBuilder historyMessage = new StringBuilder();
+            StringBuilder historyTime = new StringBuilder();
+            int rows = 1;
+            int index = 0;
+            for (String item : historyItems) {
+                Message message = new Message(item);
+                if (index % 3 == 0) {
+                    historyMessage.append(message.splitMessage());
+                    rows = message.getRowsCount();
+                } else if (index % 3 == 1) {
+                    historyTime.append(message.formatTime(item, rows));
                 }
-            } else {
-                for (String historyLine : historyLines) {
-                    System.out.println("line " + (i++) + historyLine);
-                    history.append(historyLine);
-                }
+                index++;
             }
+            String[] historyOut = new String[2];
+            historyOut[0] = historyMessage.toString();
+            historyOut[1] = historyTime.toString();
+            return historyOut;
         } catch (IOException e) {
             System.out.println("Error while reading history from " + file.getPath());
             e.printStackTrace();
         }
-        return history.toString();
+        return null;
+    }
+
+    private List<String> getHistory() throws IOException {
+        List<String> historyLines = Files.readAllLines(Paths.get(file.getPath()));
+        int count = historyLines.size();
+        System.out.println("count" + count);
+        if (count > LAST_ROWS_COUNT * 3) {
+            return historyLines.subList(count - LAST_ROWS_COUNT * 3, count);
+        }
+        return historyLines;
     }
 }

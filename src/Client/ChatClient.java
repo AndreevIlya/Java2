@@ -126,8 +126,10 @@ class ChatClient extends JFrame{
             if(showHistoryAtLogin){
                 clientHistory = new History("History", "history_" + loginField.getText(), "history.txt");
                 String[] oldHistory = clientHistory.splitHistory();
-                textArea.append(oldHistory[0]);
-                timeArea.append(oldHistory[1]);
+                if (oldHistory != null) {
+                    textArea.append(oldHistory[0]);
+                    timeArea.append(oldHistory[1]);
+                }
                 showHistoryAtLogin = false;
             }
             System.out.println("Logged in.");
@@ -143,7 +145,7 @@ class ChatClient extends JFrame{
             System.out.println("Received " + s[1] + " at " + s[2]);
             textArea.append(s[1]);
             timeArea.append(s[2]);
-            clientHistory.writeHistory(s[1] + "&" + s[2] + "&");
+            clientHistory.writeHistory(s[1] + s[2]);
         });
         return map;
     }
