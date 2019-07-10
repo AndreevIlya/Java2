@@ -176,7 +176,7 @@ class ChatServer {
     }
 
     private static void startListenThread(Client client, Socket socket,ClientService clientService){
-        Thread logoutThread = new Thread(() -> {
+        executorService.execute(() -> {
             while (true) {
                 try {
                     listenToInputStream(client, socket,clientService);
@@ -190,12 +190,10 @@ class ChatServer {
                 }
             }
         });
-        logoutThread.setDaemon(true);
-        logoutThread.start();
     }
 
     private static void startLoginAfterFailureThread(Socket socket,DataInputStream inputStream,DataOutputStream outputStream){
-        Thread loginAfter = new Thread(() -> {
+        executorService.execute(() -> {
             while (true) {
                 try {
                     if(loginAfterFailure(socket,inputStream,outputStream)) break;
@@ -206,8 +204,6 @@ class ChatServer {
                 }
             }
         });
-        loginAfter.setDaemon(true);
-        loginAfter.start();
     }
 
     private static boolean loginAfterFailure(Socket socket, @NotNull DataInputStream inputStream, DataOutputStream outputStream) throws IOException {
