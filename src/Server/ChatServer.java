@@ -12,6 +12,8 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 class ChatServer {
     private static final ClientsDB clientsDB = new ClientsDB();
@@ -247,17 +249,17 @@ class ChatServer {
 
     private static void listenExit(){
         Scanner scanner = new Scanner(System.in);
-        Thread exitThread = new Thread(() -> {
-            while (true){
-               if(scanner.next().equals("exit")) {
-                   System.out.println("Shutting down server.");
-                   clientsDB.close();
-                   System.exit(0);
-               }
-           }
+        ExecutorService es = Executors.newSingleThreadExecutor();
+        es.execute(() -> {
+            while (true) {
+                if (scanner.next().equals("exit")) {
+                    System.out.println("Shutting down server.");
+                    clientsDB.close();
+                    System.exit(0);
+                }
+            }
         });
-        exitThread.setDaemon(true);
-        exitThread.start();
+        es.shutdown();
     }
 
     private static String moderateLine(String str) {
