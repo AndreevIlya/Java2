@@ -14,11 +14,13 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 class ChatServer {
     private static final ClientsDB clientsDB = new ClientsDB();
     private static final ClientStorage clientStorage = new ClientStorage();
     private static final MessageService messageService = new MessageService(clientStorage);
+    private static final ExecutorService executorService = Executors.newCachedThreadPool(new ThreadBuilder());
     private static final int PORT = 4444;
 
     private static final Map<String,Responder> responderMap = initResponderMap();
@@ -249,17 +251,16 @@ class ChatServer {
 
     private static void listenExit(){
         Scanner scanner = new Scanner(System.in);
-        ExecutorService es = Executors.newSingleThreadExecutor();
-        es.execute(() -> {
+        executorService.execute(() -> {
             while (true) {
                 if (scanner.next().equals("exit")) {
                     System.out.println("Shutting down server.");
                     clientsDB.close();
+                    executorService.shutdown();
                     System.exit(0);
                 }
             }
         });
-        es.shutdown();
     }
 
     private static String moderateLine(String str) {
@@ -270,5 +271,15 @@ class ChatServer {
             }
         }
         return str;
+    }
+
+    private static class ThreadBuilder implements ThreadFactory {
+
+        @Override
+        public Thread newThread(@NotNull Runnable r) {
+            Thread thread = new Thread(r);
+            thread.setDaemon(true);
+            return thread;
+        }
     }
 }
