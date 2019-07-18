@@ -12,11 +12,15 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 class ChatServer {
     private static final ClientsDB clientsDB = new ClientsDB();
     private static final ClientStorage clientStorage = new ClientStorage();
     private static final MessageService messageService = new MessageService(clientStorage);
+    private static final ExecutorService executorService = Executors.newCachedThreadPool(new ThreadBuilder());
     private static final int PORT = 4444;
 
     private static final Map<String,Responder> responderMap = initResponderMap();
@@ -172,7 +176,7 @@ class ChatServer {
     }
 
     private static void startListenThread(Client client, Socket socket,ClientService clientService){
-        Thread logoutThread = new Thread(() -> {
+        executorService.execute(() -> {
             while (true) {
                 try {
                     listenToInputStream(client, socket,clientService);
@@ -186,12 +190,10 @@ class ChatServer {
                 }
             }
         });
-        logoutThread.setDaemon(true);
-        logoutThread.start();
     }
 
     private static void startLoginAfterFailureThread(Socket socket,DataInputStream inputStream,DataOutputStream outputStream){
-        Thread loginAfter = new Thread(() -> {
+        executorService.execute(() -> {
             while (true) {
                 try {
                     if(loginAfterFailure(socket,inputStream,outputStream)) break;
@@ -202,8 +204,6 @@ class ChatServer {
                 }
             }
         });
-        loginAfter.setDaemon(true);
-        loginAfter.start();
     }
 
     private static boolean loginAfterFailure(Socket socket, @NotNull DataInputStream inputStream, DataOutputStream outputStream) throws IOException {
@@ -247,17 +247,16 @@ class ChatServer {
 
     private static void listenExit(){
         Scanner scanner = new Scanner(System.in);
-        Thread exitThread = new Thread(() -> {
-            while (true){
-               if(scanner.next().equals("exit")) {
-                   System.out.println("Shutting down server.");
-                   clientsDB.close();
-                   System.exit(0);
-               }
-           }
+        executorService.execute(() -> {
+            while (true) {
+                if (scanner.next().equals("exit")) {
+                    System.out.println("Shutting down server.");
+                    clientsDB.close();
+                    executorService.shutdown();
+                    System.exit(0);
+                }
+            }
         });
-        exitThread.setDaemon(true);
-        exitThread.start();
     }
 
     private static String moderateLine(String str) {
@@ -268,5 +267,15 @@ class ChatServer {
             }
         }
         return str;
+    }
+
+    private static class ThreadBuilder implements ThreadFactory {
+
+        @Override
+        public Thread newThread(@NotNull Runnable r) {
+            Thread thread = new Thread(r);
+            thread.setDaemon(true);
+            return thread;
+        }
     }
 }
