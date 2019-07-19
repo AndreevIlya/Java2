@@ -1,11 +1,16 @@
 package Server;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.Closeable;
 import java.sql.*;
 
 class ClientsDB implements Closeable{
     private static final String JDBC_DRIVER = "org.postgresql.Driver";
     private static final String DATABASE = "jdbc:postgresql://127.0.0.1:5432/javachat?user=postgres&password=c8cbdcdf";
+    private static final Logger LOGGER = LogManager.getLogger(ClientsDB.class);
+
     private Connection connection;
 
     ClientsDB(){
@@ -13,7 +18,7 @@ class ClientsDB implements Closeable{
             Class.forName(JDBC_DRIVER);
             connection = DriverManager.getConnection(DATABASE);
         } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("Unable to init connection to DB " + e);
         }
     }
 
@@ -28,12 +33,12 @@ class ClientsDB implements Closeable{
                 if(login.equals(logins.getString("name"))) return false;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("SQLException while SELECT check query " + e);
         } finally {
             try {
                 checkPresenceStatement.close();
             } catch (SQLException e2) {
-                e2.printStackTrace();
+                LOGGER.error("Unable to close SELECT check statement " + e2);
             }
         }
         return true;
@@ -48,21 +53,20 @@ class ClientsDB implements Closeable{
                 addStatement.setString(1, login);
                 addStatement.setString(2, Integer.toString(pass.hashCode()));
                 addStatement.executeUpdate();
-                System.out.println(login + " is now added to DB.");
+                LOGGER.info(login + " is now added to DB.");
                 return true;
             } catch (SQLException e) {
-                e.printStackTrace();
-                System.out.println("SQLException.");
+                LOGGER.error("SQLException while INSERT query " + e);
                 return false;
             } finally {
                 try {
                     addStatement.close();
                 } catch (SQLException e2) {
-                    e2.printStackTrace();
+                    LOGGER.error("Unable to close INSERT statement " + e2);
                 }
             }
         } else {
-            System.out.println(login + " have already been added to DB.");
+            LOGGER.info(login + " have already been added to DB.");
             return false;
         }
     }
@@ -81,12 +85,12 @@ class ClientsDB implements Closeable{
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("SQLException while INSERT check auth query " + e);
         } finally {
             try {
                 checkPresenceStatement.close();
             } catch (SQLException e2) {
-                e2.printStackTrace();
+                LOGGER.error("Unable to close INSERT check auth statement " + e2);
             }
         }
         return result;
@@ -96,8 +100,8 @@ class ClientsDB implements Closeable{
     public void close(){
         try {
             connection.close();
-        } catch (SQLException e2) {
-            e2.printStackTrace();
+        } catch (SQLException e) {
+            LOGGER.error("Unable to close connection to DB " + e);
         }
     }
 }

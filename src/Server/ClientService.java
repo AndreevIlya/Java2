@@ -1,13 +1,17 @@
 package Server;
 
-
 import Message.Message;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 
 class ClientService {
+    private static final Logger LOGGER = LogManager.getLogger(ClientService.class);
     private final Client client;
     private final MessageService messageService;
     private final ClientStorage clientStorage;
 
+    @Contract(pure = true)
     ClientService(Client client, MessageService messageService, ClientStorage clientStorage) {
         this.client = client;
         this.messageService = messageService;
@@ -15,7 +19,7 @@ class ClientService {
     }
 
     void processMessage(String message) {
-        System.out.println(String.format("received message '%s' to '%s'", message, client));
+        LOGGER.info(String.format("received message '%s' to '%s'", message, client));
         Message processedMessage = new Message(message);
         message = "message&" + client.getLogin() + ": " +
                 processedMessage.splitMessage() + "&" +
@@ -26,7 +30,7 @@ class ClientService {
 
     void processPrivateMessage(String login,String message) {
         if(clientStorage.containsClient(login)) {
-            System.out.println(String.format("received message '%s' to '%s'", message, client));
+            LOGGER.info(String.format("received message '%s' to '%s'", message, client));
             if(client.getLogin().equals(login)){
                 messageService.sendPrivateMessage(login, "You cannot write to yourself.");
             }else{

@@ -1,17 +1,22 @@
 package Server;
 
-import java.util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.HashMap;
+import java.util.Map;
 
 class ClientStorage {
     private static final Map<String, Client> clientMap = new HashMap<>();
+    private static final Logger LOGGER = LogManager.getLogger(ClientStorage.class);
 
     synchronized void addClient(String login,Client client) {
-        System.out.println("client added: " + login);
+        LOGGER.info("client added: " + login);
         clientMap.put(login,client);
     }
 
     synchronized void removeClient(String login) {
-        System.out.println("client removed: " + login);
+        LOGGER.info("client removed: " + login);
         clientMap.remove(login);
     }
 

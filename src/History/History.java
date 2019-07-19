@@ -9,10 +9,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class History {
     private final File file;
     private static final int LAST_ROWS_COUNT = 10;
+    private static final Logger LOGGER = Logger.getLogger(History.class.getName());
 
     public History(String rootDir, String directory, String name) {
         File dir;
@@ -23,19 +25,19 @@ public class History {
         }
         if(!dir.exists()){
             if(dir.mkdir()){
-                System.out.println("History directory created at " + dir);
+                LOGGER.info("History directory created at " + dir);
             }else{
-                System.out.println("Unable to create history directory at " + dir);
+                LOGGER.info("Unable to create history directory at " + dir);
             }
         }
         file = new File(dir,name);
         if(!file.exists()){
             try {
                 if(file.createNewFile()) {
-                    System.out.println("History file created at " + name);
+                    LOGGER.info("History file created at " + name);
                 }
             } catch (IOException e) {
-                System.out.println("Unable to create history file at " + name);
+                LOGGER.severe("Unable to create history file at " + name);
             }
         }
     }
@@ -44,11 +46,11 @@ public class History {
         try{
             FileWriter writer = new FileWriter(file, true);
             BufferedWriter bufferWriter = new BufferedWriter(writer);
-            System.out.println("Writing history: " + note + "\n");
+            LOGGER.info("Writing history: " + note + "\n");
             bufferWriter.write(note + "\n");
             bufferWriter.close();
         }catch (IOException e){
-            System.out.println("Error while writing history to " + file.getPath());
+            LOGGER.severe("Error while writing history to " + file.getPath());
         }
     }
 
@@ -74,8 +76,7 @@ public class History {
             historyOut[1] = historyTime.toString();
             return historyOut;
         } catch (IOException e) {
-            System.out.println("Error while reading history from " + file.getPath());
-            e.printStackTrace();
+            LOGGER.severe("Error while reading history from " + file.getPath());
         }
         return null;
     }
